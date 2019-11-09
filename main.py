@@ -258,8 +258,7 @@ reg_data_select = Select(title="Dataset:", value="Select dataset",
 reg_data_select.on_change("value", create_figure_reg)
 
 
-reg_features_ms = MultiSelect(title="Select features for regression:"
-                                    "(Features will exclude target even if selected through 'ALL' or explicitly)",
+reg_features_ms = MultiSelect(title="Select features:",
                               value=["ALL"], options=["ALL"])
 # reg_features_ms.on_change("value", create_figure_reg)
 
@@ -295,6 +294,7 @@ clust_scat.yaxis.axis_label = "Dimension 2"
 clust_scat.background_fill_color = "whitesmoke"
 clust_scat.border_fill_color = "whitesmoke"
 clust_scat.title.text_font_size = '12pt'
+clust_scat.min_border_top = 40
 
 
 def cluster_plot():
@@ -334,7 +334,7 @@ clust_norm_rbg = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], acti
 
 clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, callback_policy='mouseup')
 
-button_cluster = Button(label="Calculate clusters")
+button_cluster = Button(label="Calculate and plot clusters")
 button_cluster.on_click(cluster_plot)
 
 div_loading = Div(text="""""")
@@ -346,3 +346,4 @@ tabs = Tabs(tabs=[tab_eda, tab_reg, tab_cluster], tabs_location='above')
 
 curdoc().add_root(tabs)
 curdoc().title = "ML APP"
+

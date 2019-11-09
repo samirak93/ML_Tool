@@ -130,6 +130,14 @@ div.chart_div table {
           }
 .bk-root .bk-btn-default {
     color: #333;
-    background-color: #05b7ff;
+    background-color: none;
     border-color: #ccc;
+}
+.bk-root .bk-btn-default:hover {
+    background-color: #05b7ff;
+    border-color: #b8b8b8;
+}
+.bk-root .bk-btn-default.bk-active {
+    background-color: #05b7ff;
+    border-color: #adadad;
 }
