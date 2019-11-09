@@ -304,9 +304,9 @@ def cluster_plot():
     active_clust_no = clust_slider.value
 
     source_clust_data = clustering_data(data_path, active_df, active_features, active_norm, active_clust_no,
-                                        clustering_data_source, source_clustering, table_clustering,
-                                        clust_features_ms, mapper, clust_scat, div_loading)
+                                        clustering_data_source, mapper, clust_scat, div_loading)
     source_clust.data = source_clust_data
+
 
 def clustering_plot(attr, old, new):
     active_df = str(clus_data_select.value)
@@ -317,15 +317,6 @@ def clustering_plot(attr, old, new):
     source_clustering.data = dict(clust_df)
     table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in clust_df.columns]
     clust_features_ms.options = ['ALL'] + list(clust_df.columns)
-    # active_df = str(clus_data_select.value)
-    # active_features = clust_features_ms.value
-    # active_norm = clust_norm_rbg.active
-    # active_clust_no = clust_slider.value
-    #
-    # source_clust_data = clustering_data(data_path, active_df, active_features, active_norm, active_clust_no,
-    #                                     clustering_data_source, source_clustering, table_clustering,
-    #                                     clust_features_ms, mapper, clust_scat, div_loading)
-    # source_clust.data = source_clust_data
 
 
 clus_data_select = Select(title="Dataset:", value="Select dataset",
@@ -338,20 +329,18 @@ clust_columns = [TableColumn(field=cols, title=cols) for cols in df_clustering.c
 table_clustering = DataTable(source=source_clustering, columns=clust_columns, width=1200, height=300, fit_columns=False)
 
 clust_features_ms = MultiSelect(title="Select features for clustering:", value=["ALL"], options=["ALL"])
-# clust_features_ms.on_change("value", clustering_plot)
 
 clust_norm_rbg = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
-# clust_norm_rbg.on_change("active", clustering_plot)
 
 clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, callback_policy='mouseup')
-# clust_slider.on_change('value_throttled', clustering_plot)
 
 button_cluster = Button(label="Calculate clusters")
 button_cluster.on_click(cluster_plot)
 
 div_loading = Div(text="""""")
-tab_cluster = Panel(child=column(clus_data_select, table_clustering, row(column(clust_features_ms,
-                          clust_norm_rbg,clust_slider, button_cluster, div_loading), column(clust_scat))), title="Clustering")
+tab_cluster = Panel(child=column(clus_data_select, table_clustering,
+                                 row(column(clust_features_ms, clust_norm_rbg, clust_slider, button_cluster, div_loading),
+                                     column(clust_scat))), title="Clustering")
 
 tabs = Tabs(tabs=[tab_eda, tab_reg, tab_cluster], tabs_location='above')
 

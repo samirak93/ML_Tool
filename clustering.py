@@ -69,16 +69,11 @@ def get_tsne(df, c_no, mapper, div_loading):
 
 
 def clustering_data(data_path, active_df, active_features, active_norm, active_clust_no,
-                    clustering_data_source, source_clustering, table_clustering,
-                    clust_features_ms, mapper, clust_scat, div_loading):
+                    clustering_data_source, mapper, clust_scat, div_loading):
 
     clust_df = pd.read_csv(data_path+str(clustering_data_source.get(active_df)))
     clust_df = clust_df.fillna(clust_df.mean())
 
-    # source_clustering.data = dict(clust_df)
-    # table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in clust_df.columns]
-
-    # clust_features_ms.options = ['ALL'] + list(clust_df.columns)
     if 'ALL' in active_features:
         clust_df = clust_df
     else:
