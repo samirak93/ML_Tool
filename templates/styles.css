@@ -1,0 +1,135 @@
+h2 {
+    width: 100vw;
+}
+h4 {
+    width: 100vw;
+}
+.bk-root {
+    font-family: times;
+    position: relative;
+    font-size: 12pt;
+    width: auto;
+    height: auto;
+}
+.bk-root .bk-widget-box {
+    overflow: visible;
+    padding: 10.1px 15px;
+}
+
+.bk-root .bk-widget label {
+    margin-bottom: 2px;
+}
+
+.bk-root .bk-widget select {
+    min-width: 50%;
+}
+.bk-root .bk-widget-form-input {
+    -moz-appearance: none;
+	  font-family: times;
+    font-size: 13pt;
+    display: block;
+    padding: 0;
+    height: 30px;
+    color: whitesmoke;
+    background-color: #05b7ff;
+    border: 1px solid #ccc;
+    border-radius: 40px;
+    border-color: whitesmoke;
+}
+.bk-root .bk-bs-btn-default.bk-bs-active{
+    color: whitesmoke;
+    background-color: #05b7ff;
+    border-color: whitesmoke;
+      -webkit-appearance: none;
+    font-size: 14px;
+}
+
+.bk-root .bk-bs-btn-default {
+    color: #333;
+    background-color: whitesmoke;
+    border-color: #ccc;
+    margin-top: 17px;
+    font-size: 14px;
+}
+.bk-root .bk-tabs-header .bk-tab.bk-active {
+    color: black;
+    background-color: #05b7ff;
+    border-color: #05b7ff;
+}
+
+.bk-root .bk-tabs-header.bk-above .bk-tab {
+    border-width: 3px 3px 0px 1px;
+    border-radius: 4px 4px 0 0;
+    font-size: 16px;
+}
+/* Tab sizes */
+
+.bk-root .bk-tabs-header .bk-tab {
+    padding: 5px 108px;
+    border: solid;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.bk-plot-wrapper table {
+    margin: 0 auto;
+}
+.centered {
+      display : block;
+      margin : auto auto;
+      text-align: center;
+      width: 1400px;
+      }
+.bk-root .bk-tabs-header.bk-left .bk-tab {
+    border-width: 10px 10px 10px 10px;
+    border-radius: 0 0 0 0px;
+    text-align: left;
+}
+
+.bk-root .bk-btn {
+    height: 100%;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    cursor: pointer;
+    padding: 6px 12px;
+    font-size: 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    outline: 0;
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+}
+
+.bk-root .bk-data-table {
+    box-sizing: content-box;
+    font-size: 13px;
+    width: fit-content;
+    background-color: whitesmoke;
+}
+div.chart_div table {
+    width: auto;
+    margin: 0 auto !important;
+}
+.bk-root .bk-input {
+    display: inline-block;
+    width: 300px;
+    flex-grow: 1;
+    -webkit-flex-grow: 1;
+    min-height: 31px;
+    padding: 0 12px;
+    background-color: #fff;
+}
+
+.slick-cell {
+            background-color: whitesmoke !important;
+            background-image: none !important;
+          }
+.bk-root .bk-btn-default {
+    color: #333;
+    background-color: #05b7ff;
+    border-color: #ccc;
+}

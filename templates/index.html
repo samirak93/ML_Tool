@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style>
+            body { background: #f5f5f5; }
+        </style>
+        <meta charset="utf-8">
+        {{ bokeh_css }}
+        {{ bokeh_js }}
+        <style>
+             {% include 'styles.css' %}
+        </style>
+        <div class="content">
+            <h2><center>Machine Learning Tool</center></h2>
+        </div>
+    </head>
+    <body class="centered">
+        {{ plot_div|indent(8) }}
+        {{ plot_script|indent(8) }}
+    </body>
+
+</html>
