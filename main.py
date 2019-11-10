@@ -58,15 +58,6 @@ eda_columns = [TableColumn(field=cols, title=cols) for cols in df_exploration.co
 table_eda = DataTable(source=source_eda, columns=eda_columns, width=1200, height=300, fit_columns=False)
 
 
-def update_figure(attr, old, new):
-    active_df = explore_data_select.value
-
-    eda_df = pd.read_csv(data_path + str(eda_data_source.get(active_df)))
-    eda_df = eda_df.fillna(eda_df.mean())
-
-
-
-
 def create_figure(attr, old, new):
     active_df = explore_data_select.value
 
@@ -192,15 +183,9 @@ hover_reg = HoverTool(
 plot_reg = figure(plot_height=500, plot_width=900, tools=['pan,box_zoom,reset,wheel_zoom']+[hover_reg])
 
 reg_scatter = plot_reg.scatter(x='actual', y='predict', size=10, line_color="white", alpha=0.6, hover_color='white',
-                 hover_alpha=0.5, source=source_reg_scat, fill_color='dodgerblue',)
-legend_reg = Legend(items=[
-    ("", [reg_scatter])])
+                               hover_alpha=0.5, source=source_reg_scat, fill_color='dodgerblue',)
+legend_reg = Legend(items=[("", [reg_scatter])])
 plot_reg.add_layout(legend_reg, 'right')
-
-# text_x, text_y, r2_text = [], [], []
-# text_source = ColumnDataSource(data=dict(x=text_x, y=text_y, text=r2_text))
-# glyph = LabelSet(x="x", y="y", text="text", text_color="white", source=text_source)
-# plot_reg.add_layout(glyph)
 
 plot_reg.xaxis.axis_label = "Actual Value"
 plot_reg.yaxis.axis_label = "Predicted Value"
@@ -223,12 +208,6 @@ def corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr):
     plot_corr.xaxis.major_label_overrides = tick_dict
     plot_corr.yaxis.major_label_overrides = tick_dict
 
-def get_slope(slope, intercept, actual_reg):
-    print (True)
-    f = lambda x: slope*x + intercept
-    x = np.array([min(actual_reg), max(actual_reg)])
-    print (f(x),x)
-    # source_slope.data = dict(slope=x, intercept=f(x))
 
 def reg_plot():
 
