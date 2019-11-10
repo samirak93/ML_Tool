@@ -1,11 +1,11 @@
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
-from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper
-from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button
-from bokeh.layouts import column, row, gridplot
+from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, LabelSet, Legend, NumeralTickFormatter
+from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
+                                 CheckboxGroup
+from bokeh.layouts import column, row
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu
 from bokeh.transform import linear_cmap
-from bokeh.models import NumeralTickFormatter
 
 from math import pi
 from collections import OrderedDict
@@ -82,23 +82,38 @@ def create_figure(attr, old, new):
         select_y_axis.options = ["None"]+eda_df.columns.values.tolist()
         select_hist.options = ["None"]+eda_df.columns.values.tolist()
 
-    xs, ys = [], []
+        xs, ys = [], []
 
-    if select_x_axis.value != "None" and select_y_axis.value != "None":
-        xs = eda_df[select_x_axis.value].values
-        ys = eda_df[select_y_axis.value].values
+        if select_x_axis.value != "None" and select_y_axis.value != "None":
+            if log_x_cb.active:
+                if log_x_cb.active[0] == 0:
+                    xs = np.log(eda_df[select_x_axis.value].values+1)
+            else:
+                xs = eda_df[select_x_axis.value].values
 
-    plot_scatter.xaxis.axis_label = select_x_axis.value
-    plot_scatter.yaxis.axis_label = select_y_axis.value
-    plot_hist.xaxis.axis_label = select_hist.value
-    plot_hist.yaxis.axis_label = 'Count'
-    source_scatter.data = dict(x=xs, y=ys)
+            if log_y_cb.active:
+                if log_y_cb.active[0] == 0:
+                    ys = np.log(eda_df[select_y_axis.value].values+1)
+            else:
+                ys = eda_df[select_y_axis.value].values
 
-    hist, edges = [], []
-    if select_hist.value != 'None':
-        hist, edges = np.histogram(eda_df[select_hist.value].values, bins=slider_bins.value)
+        plot_scatter.xaxis.axis_label = select_x_axis.value
+        plot_scatter.yaxis.axis_label = select_y_axis.value
+        plot_hist.xaxis.axis_label = select_hist.value
+        plot_hist.yaxis.axis_label = 'Count'
+        source_scatter.data = dict(x=xs, y=ys)
 
-    source_histogram.data = dict(top=hist, left=edges[:-1], right=edges[1:])
+        hist, edges = [], []
+        if select_hist.value != 'None':
+            if log_hist_cb.active:
+                if log_hist_cb.active[0] == 0:
+                    log_hist = np.log(eda_df[select_hist.value].values+1)
+            else:
+                log_hist = eda_df[select_hist.value].values
+
+            hist, edges = np.histogram(log_hist, bins=slider_bins.value)
+
+        source_histogram.data = dict(top=hist, left=edges[:-1], right=edges[1:])
 
 
 explore_data_select = Select(title="Dataset:", value="Select dataset",
@@ -117,8 +132,19 @@ select_hist.on_change('value', create_figure)
 slider_bins = Slider(title="Histogram Bins", value=20, start=5.0, end=50, step=1, callback_policy='mouseup')
 slider_bins.on_change('value_throttled', create_figure)
 
-tab_eda = Panel(child=column(explore_data_select, table_eda, row(column(select_x_axis, select_y_axis), plot_scatter),
-                             row(column(select_hist, slider_bins), plot_hist)), title="Exploration")
+log_x_cb = CheckboxGroup(labels=["Log transform x-axis"], active=[])
+log_x_cb.on_change('active', create_figure)
+
+log_y_cb = CheckboxGroup(labels=["Log transform y-axis"], active=[])
+log_y_cb.on_change('active', create_figure)
+
+log_hist_cb = CheckboxGroup(labels=["Log transform axis"], active=[])
+log_hist_cb.on_change('active', create_figure)
+
+
+tab_eda = Panel(child=column(explore_data_select, table_eda, row(column(select_x_axis, log_x_cb,
+                                                                        select_y_axis, log_y_cb), plot_scatter),
+                             row(column(select_hist, log_hist_cb, slider_bins), plot_hist)), title="Exploration")
 
 
 """
@@ -163,10 +189,18 @@ hover_reg = HoverTool(
         tooltips=[("Actual", "@actual{int}"),
                   ("Predicted", "@predict{int}")])
 
-plot_reg = figure(plot_height=500, plot_width=700, tools=['pan,box_zoom,reset']+[hover_reg])
+plot_reg = figure(plot_height=500, plot_width=900, tools=['pan,box_zoom,reset,wheel_zoom']+[hover_reg])
 
-plot_reg.scatter(x='actual', y='predict', size=10, line_color="white", alpha=0.6, hover_color='white',
+reg_scatter = plot_reg.scatter(x='actual', y='predict', size=10, line_color="white", alpha=0.6, hover_color='white',
                  hover_alpha=0.5, source=source_reg_scat, fill_color='dodgerblue',)
+legend_reg = Legend(items=[
+    ("", [reg_scatter])])
+plot_reg.add_layout(legend_reg, 'right')
+
+# text_x, text_y, r2_text = [], [], []
+# text_source = ColumnDataSource(data=dict(x=text_x, y=text_y, text=r2_text))
+# glyph = LabelSet(x="x", y="y", text="text", text_color="white", source=text_source)
+# plot_reg.add_layout(glyph)
 
 plot_reg.xaxis.axis_label = "Actual Value"
 plot_reg.yaxis.axis_label = "Predicted Value"
@@ -174,6 +208,7 @@ plot_reg.background_fill_color = "whitesmoke"
 plot_reg.border_fill_color = "whitesmoke"
 plot_reg.xaxis.formatter = NumeralTickFormatter(format="00")
 plot_reg.yaxis.formatter = NumeralTickFormatter(format="00")
+
 
 def corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr):
     source_corr.data = dict(top=top, bottom=bottom, left=left, right=right, color=color_list, corr=corr)
@@ -188,6 +223,12 @@ def corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr):
     plot_corr.xaxis.major_label_overrides = tick_dict
     plot_corr.yaxis.major_label_overrides = tick_dict
 
+def get_slope(slope, intercept, actual_reg):
+    print (True)
+    f = lambda x: slope*x + intercept
+    x = np.array([min(actual_reg), max(actual_reg)])
+    print (f(x),x)
+    # source_slope.data = dict(slope=x, intercept=f(x))
 
 def reg_plot():
 
@@ -215,13 +256,14 @@ def reg_plot():
             else:
                 features_df = reg_df.loc[:, features]
 
-
         target_df = reg_df.loc[:, label]
 
-        actual_reg, predict_reg = get_regression_plot(features_df, target_df)
+        actual_reg, predict_reg, text, MAE, RMSE = get_regression_plot(features_df, target_df)
         plot_reg.x_range.start, plot_reg.x_range.end = actual_reg.min(), actual_reg.max()
         plot_reg.y_range.start, plot_reg.y_range.end = predict_reg.min(), predict_reg.max()
 
+        legend_reg.items = [(text[0], [reg_scatter]), ("MAE - "+str(MAE), [reg_scatter]),
+                            ("RMSE - "+str(RMSE), [reg_scatter])]
         source_reg_scat.data = dict(actual=list(actual_reg), predict=list(predict_reg))
 
 
