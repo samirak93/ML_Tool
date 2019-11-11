@@ -1,6 +1,7 @@
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
-from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, LabelSet, Legend, NumeralTickFormatter
+from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, LabelSet, Legend, NumeralTickFormatter, \
+                            LegendItem, Span
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
                                  CheckboxGroup
 from bokeh.layouts import column, row
@@ -182,17 +183,59 @@ hover_reg = HoverTool(
 
 plot_reg = figure(plot_height=500, plot_width=900, tools=['pan,box_zoom,reset,wheel_zoom']+[hover_reg])
 
-reg_scatter = plot_reg.scatter(x='actual', y='predict', size=10, line_color="white", alpha=0.6, hover_color='white',
+reg_scatter = plot_reg.scatter(x='actual', y='predict', size=7, line_color="white", alpha=0.6, hover_color='white',
                                hover_alpha=0.5, source=source_reg_scat, fill_color='dodgerblue',)
-legend_reg = Legend(items=[("", [reg_scatter])])
-plot_reg.add_layout(legend_reg, 'right')
+legend_reg = Legend(items=[LegendItem(label="", renderers=[reg_scatter])])
+plot_reg.add_layout(legend_reg)
 
 plot_reg.xaxis.axis_label = "Actual Value"
 plot_reg.yaxis.axis_label = "Predicted Value"
 plot_reg.background_fill_color = "whitesmoke"
 plot_reg.border_fill_color = "whitesmoke"
-plot_reg.xaxis.formatter = NumeralTickFormatter(format="00")
-plot_reg.yaxis.formatter = NumeralTickFormatter(format="00")
+plot_reg.xaxis.formatter = NumeralTickFormatter(format="0")
+plot_reg.yaxis.formatter = NumeralTickFormatter(format="0")
+
+residual, predict_reg = [], []
+source_reg_resid = ColumnDataSource(data=dict(predict=predict_reg, residual=residual))
+
+hover_resid = HoverTool(tooltips=[("Predicted", "@predict{int}"),
+                                  ("Residual", "@residual{int}")])
+
+plot_resid = figure(plot_height=500, plot_width=700, tools=['pan,box_zoom,reset,wheel_zoom']+[hover_resid])
+
+hline = Span(location=0, dimension='width', line_color='black', line_width=3, line_alpha=0, line_dash="dashed")
+plot_resid.renderers.extend([hline])
+
+plot_resid.scatter(x='predict', y='residual', size=7, line_color="white", alpha=0.6, hover_color='white',
+                   hover_alpha=0.5, source=source_reg_resid, fill_color='dodgerblue',)
+
+plot_resid.xaxis.axis_label = "Predicted Value"
+plot_resid.yaxis.axis_label = "Residual Value"
+plot_resid.background_fill_color = "whitesmoke"
+plot_resid.border_fill_color = "whitesmoke"
+plot_resid.xaxis.formatter = NumeralTickFormatter(format="0")
+plot_resid.yaxis.formatter = NumeralTickFormatter(format="0")
+
+
+
+vhist, vedges = [], []
+vzeros = []
+vmax = []
+
+source_hist_resid = ColumnDataSource(data=dict(top=vedges[1:], bottom=vedges[:-1], right=vhist))
+
+hover_resid_hist = HoverTool(tooltips=[("Count", "@right{int}")])
+
+plot_hist_resid = figure(toolbar_location=None, plot_width=200, plot_height=plot_resid.plot_height,
+                         y_range=plot_resid.y_range, min_border=10, y_axis_location="right", tools=[hover_resid_hist]+['pan'])
+plot_hist_resid.ygrid.grid_line_color = None
+plot_hist_resid.xaxis.major_label_orientation = np.pi/4
+plot_hist_resid.background_fill_color = "whitesmoke"
+plot_hist_resid.border_fill_color = "whitesmoke"
+plot_hist_resid.yaxis.formatter = NumeralTickFormatter(format="0")
+
+plot_hist_resid.quad(left=0, bottom='bottom', top='top', right='right', color="dodgerblue",
+                     line_color="#3A5785", source=source_hist_resid)
 
 
 def corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr):
@@ -237,13 +280,29 @@ def reg_plot():
 
         target_df = reg_df.loc[:, label]
 
-        actual_reg, predict_reg, text, MAE, RMSE = get_regression_plot(features_df, target_df)
+        actual_reg, predict_reg, text, MAE, RMSE, residual = get_regression_plot(features_df, target_df)
+
         plot_reg.x_range.start, plot_reg.x_range.end = actual_reg.min(), actual_reg.max()
         plot_reg.y_range.start, plot_reg.y_range.end = predict_reg.min(), predict_reg.max()
 
-        legend_reg.items = [(text[0], [reg_scatter]), ("MAE - "+str(MAE), [reg_scatter]),
-                            ("RMSE - "+str(RMSE), [reg_scatter])]
+        plot_resid.x_range.start, plot_resid.x_range.end = predict_reg.min(), predict_reg.max()
+        plot_resid.y_range.start, plot_resid.y_range.end = residual.min(), residual.max()
+
         source_reg_scat.data = dict(actual=list(actual_reg), predict=list(predict_reg))
+        source_reg_resid.data = dict(predict=list(predict_reg), residual=list(residual))
+        legend_reg.items = [LegendItem(label=text[0], renderers=[reg_scatter]),
+                            LegendItem(label="MAE - " + str(MAE), renderers=[reg_scatter]),
+                            LegendItem(label="RMSE - " + str(RMSE), renderers=[reg_scatter])]
+        vhist, vedges = np.histogram(residual, bins=50)
+        vzeros = np.zeros(len(vedges) - 1)
+        vmax = max(vhist) * 1.1
+
+        plot_hist_resid.x_range.start, plot_hist_resid.x_range.end = -vmax, vmax
+        plot_hist_resid.y_range.start, plot_hist_resid.y_range.end = residual.min(), residual.max()
+
+        hline.line_alpha = 0.5
+        source_hist_resid.data = dict(top=vedges[1:], bottom=vedges[:-1], right=vhist)
+
 
 
 def create_figure_reg(attr, old, new):
@@ -256,41 +315,30 @@ def create_figure_reg(attr, old, new):
 
         source_reg.data = dict(reg_df)
         table_reg.columns = [TableColumn(field=cols, title=cols, width=90) for cols in reg_df.columns]
-        # if active_df == "House Sales":
-        #     cat_col_reg = ['bedrooms','bathrooms','floors','waterfront','view','condition','grade']
-        #
-        #     reg_df = pd.concat([pd.get_dummies(reg_df[cat_col_reg].astype('category'), drop_first=True),
-        #                reg_df.drop(columns=cat_col_reg)], axis=1, sort=False)
 
         reg_features_ms.options = ['ALL'] + list(reg_df.columns)
         reg_target_ms.options = ['SELECT TARGET'] + list(reg_df.columns)
-
-        features = reg_features_ms.options
-        label = reg_target_ms.value
-
-        # reg_plot(reg_df, features, label)
 
         top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(reg_df)
         corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr)
 
 
 reg_data_select = Select(title="Dataset:", value="Select dataset",
-                             options=["Select dataset"]+list(regression_data_source.keys()))
+                         options=["Select dataset"]+list(regression_data_source.keys()))
 reg_data_select.on_change("value", create_figure_reg)
 
 
 reg_features_ms = MultiSelect(title="Select features:",
                               value=["ALL"], options=["ALL"])
-# reg_features_ms.on_change("value", create_figure_reg)
 
 reg_target_ms = Select(title="Select target for regression:", value="SELECT TARGET", options=["SELECT TARGET"])
-# reg_target_ms.on_change("value", create_figure_reg)
 
 button_reg = Button(label="Calculate regression")
 button_reg.on_click(reg_plot)
 
 tab_reg = Panel(child=column(reg_data_select, table_reg, plot_corr,
-                             row(column(reg_features_ms, reg_target_ms, button_reg), plot_reg)),
+                             row(column(reg_features_ms, reg_target_ms, button_reg), column(plot_reg,
+                                                                                            row(plot_resid, plot_hist_resid)))),
                 title="Linear Regression")
 
 

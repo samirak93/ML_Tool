@@ -47,19 +47,16 @@ def get_regression_plot(features_df, target_df):
     regressor.fit(X_train, y_train)
 
     y_pred = regressor.predict(X_test)
+
+    residual = y_test - y_pred
+
     r2 = metrics.r2_score(y_test, y_pred)
-    slope = regressor.coef_[0]  # Takes the first element of the array
+    slope = regressor.coef_[0]
     intercept = regressor.intercept_
 
-    # x_plot = np.linspace(y_test.min(), y_test.max())
-    # y_plot = regressor.predict(x_plot)
-    # print (x_plot, y_plot)
     text = ["R^2 - %02f" % r2]
     MAE = np.round(metrics.mean_absolute_error(y_test, y_pred),2)
     MSE = np.round(metrics.mean_squared_error(y_test, y_pred),2)
     RMSE = np.round(np.sqrt(metrics.mean_squared_error(y_test, y_pred)),2)
-    # print('Mean Absolute Error:', MAE)
-    # print('Mean Squared Error:', MSE)
-    # print('Root Mean Squared Error:', np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
 
-    return y_test, y_pred, text, MAE, RMSE
+    return y_test, y_pred, text, MAE, RMSE, residual
