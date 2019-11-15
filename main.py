@@ -1,11 +1,11 @@
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, NumeralTickFormatter, \
-                            LegendItem, Span, BasicTicker
+                            LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
                                  CheckboxGroup
 from bokeh.layouts import column, row
-from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges
+from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
 
 from math import pi
@@ -240,7 +240,7 @@ plot_reg = figure(plot_height=500, plot_width=900, tools=['pan,box_zoom,reset,wh
 
 reg_scatter = plot_reg.scatter(x='actual', y='predict', size=7, line_color="white", alpha=0.6, hover_color='white',
                                hover_alpha=0.5, source=source_reg_scat, fill_color='dodgerblue',)
-legend_reg = Legend(items=[LegendItem(label="", renderers=[reg_scatter])])
+legend_reg = Legend(items=[LegendItem(label="", renderers=[reg_scatter])], location='bottom_right')
 plot_reg.add_layout(legend_reg)
 
 plot_reg.xaxis.axis_label = "Actual Value"
@@ -416,19 +416,22 @@ source_class_rep = ColumnDataSource(data=dict(df_class_report))
 class_rep_columns = [TableColumn(field=cols, title=cols) for cols in df_class_report.columns]
 table_class_rep = DataTable(source=source_class_rep, columns=class_rep_columns, width=600, height=200, fit_columns=True)
 
-logreg_cm_colors = list(reversed(Oranges[9]))
+logreg_cm_colors = list(reversed(Blues[9]))
 actual_cm, predicted_cm, value_cm = [], [], []
 source_logreg_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
 
 logreg_cm_mapper = LinearColorMapper(palette=logreg_cm_colors, low=0, high=100)
 
-hover_logreg_cm = HoverTool(
-        tooltips=[
-            ("Actual", "@Actual"),
-            ("Predicted", "@Prediction"),
-            ("Value", "@value")])
+labels_logreg_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0, y_offset=0,
+                            source=source_logreg_cm, render_mode='canvas', text_align='center', text_font='times',
+                            text_color='#FF0000', text_font_style='bold', text_font_size='16px')
+
+hover_logreg_cm = HoverTool(tooltips=[("Actual", "@Actual"),
+                                      ("Predicted", "@Prediction"),
+                                      ("Value", "@value")])
 logreg_cm_plot = figure(plot_width=400, plot_height=300, title="Confusion Matrix", toolbar_location=None,
                         tools=[hover_logreg_cm], x_axis_location="above")
+
 logreg_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=source_logreg_cm, line_color=None,
                     fill_color=transform('value', logreg_cm_mapper))
 
@@ -440,7 +443,29 @@ logreg_cm_plot.add_layout(color_bar_logreg_cm, 'right')
 color_bar_logreg_cm.background_fill_color = "whitesmoke"
 logreg_cm_plot.background_fill_color = "whitesmoke"
 logreg_cm_plot.border_fill_color = "whitesmoke"
+logreg_cm_plot.add_layout(labels_logreg_cm)
 
+hover_logreg_roc = HoverTool(tooltips=[("False Positive Rate", "@fpr_roc"),
+                                      ("True Positive Rate", "@tpr_roc")],
+                             names=['roc'])
+
+fpr_roc, tpr_roc = [], []
+source_logreg_roc = ColumnDataSource(data=dict(fpr_roc=fpr_roc, tpr_roc=tpr_roc))
+
+const_roc_x, const_roc_y = [], []
+source_logreg_const_roc = ColumnDataSource(data=dict(const_roc_x=const_roc_x, const_roc_y=const_roc_y))
+
+logreg_roc_plot = figure(plot_width=500, plot_height=500, title="ROC AUC", toolbar_location=None,
+                         tools=[hover_logreg_roc], x_range=(-0.04, 1.04), y_range=(-0.04, 1.04))
+
+roc_line = logreg_roc_plot.line(x="fpr_roc", y="tpr_roc", line_width=4, source=source_logreg_roc,
+                                line_color='dodgerblue', name='roc')
+logreg_roc_plot.line(x="const_roc_x", y="const_roc_y", line_width=2,line_dash='dashed', source=source_logreg_const_roc,
+                     line_color='orangered')
+legend_roc = Legend(items=[LegendItem(label="", renderers=[roc_line])], location='bottom_right')
+logreg_roc_plot.add_layout(legend_roc)
+logreg_roc_plot.background_fill_color = "whitesmoke"
+logreg_roc_plot.border_fill_color = "whitesmoke"
 
 def create_figure_logreg(attr, old, new):
     active_df = logreg_data_select.value
@@ -523,6 +548,12 @@ def logreg_plot():
     logreg_cm_plot.yaxis.axis_label = "Predicted"
 
     source_logreg_cm.data = confusion_df
+    source_logreg_roc.data = dict(fpr_roc=fpr, tpr_roc=tpr)
+    logreg_roc_plot.xaxis.axis_label = "False Positive Rate"
+    logreg_roc_plot.yaxis.axis_label = "True Positive Rate"
+    legend_roc.items = [LegendItem(label="Logistic Regression (area = "+str(logit_roc_auc)+")", renderers=[roc_line])]
+    source_logreg_const_roc.data = dict(const_roc_x=[0,1], const_roc_y=[0,1])
+
 
 
 logreg_data_select = Select(title="Dataset:", value="Select dataset",
@@ -541,7 +572,7 @@ button_logreg.disabled = True
 
 tab_logreg = Panel(child=column(logreg_data_select, table_logreg,
                                 row(column(logreg_features_ms, logreg_target_ms, button_logreg),
-                                    column(table_class_rep, logreg_cm_plot))),
+                                    column(table_class_rep, logreg_cm_plot, logreg_roc_plot))),
                    title="Logistic Regression")
 
 

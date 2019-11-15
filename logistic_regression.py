@@ -30,7 +30,7 @@ def get_logreg_output(features_df, target_df):
     confusion_df.columns.name = 'Prediction'
 
     confusion_df = confusion_df.stack().rename("value").reset_index()
-    logit_roc_auc = metrics.roc_auc_score(y_test, logreg.predict(X_test))
+    logit_roc_auc = np.round(metrics.roc_auc_score(y_test, logreg.predict(X_test)),3)
     fpr, tpr, thresholds = metrics.roc_curve(y_test, logreg.predict_proba(X_test)[:, 1])
 
     return accuracy_score, class_report_df, confusion_df, logit_roc_auc, fpr, tpr, thresholds
