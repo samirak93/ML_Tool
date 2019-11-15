@@ -4,14 +4,11 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 
-import pandas as pd
 import numpy as np
 import bisect
 
-from math import pi
 from numpy import arange
 from itertools import chain
-from collections import OrderedDict
 
 def get_bounds(nlabels):
     bottom = list(chain.from_iterable([[ii]*nlabels for ii in range(nlabels)]))
@@ -20,24 +17,26 @@ def get_bounds(nlabels):
     right = list(chain.from_iterable([list(range(1,nlabels+1)) for ii in range(nlabels)]))
     return top, bottom, left, right
 
-def get_colors(corr_array, colors):
-    ccorr = arange(-1, 1, 1/(len(colors)/2))
+def get_colors(corr_array, colors, min, max):
+    ccorr = arange(min, max, 1/(len(colors)/2))
     color = []
     for value in corr_array:
         ind = bisect.bisect_left(ccorr, value)
         color.append(colors[ind-1])
+
     return color
 
 
 def get_corr_plot(df):
     corr = df.corr()
-    colors = list(reversed(RdBu[9]))  # we want an odd number to ensure 0 correlation is a distinct color
+    colors = list(reversed(RdBu[9]))
     labels = df.columns
     nlabels = len(labels)
     top, bottom, left, right = get_bounds(nlabels)
-    color_list = get_colors(corr.values.flatten(), colors)
+    color_list = get_colors(corr.values.flatten(), colors, -1, 1)
 
     return top, bottom, left, right, labels, nlabels, color_list, corr.values.flatten()
+
 
 def get_regression_plot(features_df, target_df):
 

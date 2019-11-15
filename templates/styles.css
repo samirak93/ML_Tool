@@ -65,7 +65,8 @@ h4 {
 /* Tab sizes */
 
 .bk-root .bk-tabs-header .bk-tab {
-    padding: 5px 108px;
+    /*padding: 5px 80px;*/
+    width:100%;
     border: solid;
     white-space: nowrap;
     cursor: pointer;
