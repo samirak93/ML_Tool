@@ -40,6 +40,10 @@ class plot_attributes(object):
         plot.xaxis.formatter = self.x_axis_format
         plot.yaxis.formatter = self.y_axis_format
         plot.title.align = self.title_align
+        plot.title.text_font = self.text_font
+        plot.axis.axis_label_text_font = self.axis_label_text_font
+        plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
+        plot.title.text_font_size = self.text_font_size
 
         return plot
 
@@ -516,6 +520,7 @@ class logistic_regression(plot_attributes):
         self.source_logreg_roc = None
         self.source_logreg_const_roc = None
         self.normalize_logreg = None
+        self.div_report_title = None
 
     def logreg_button_enable(self, attr, old, new):
 
@@ -686,10 +691,13 @@ class logistic_regression(plot_attributes):
         self.logreg_target_ms.on_change('value', self.logreg_button_enable)
         self.button_logreg.on_click(self.logreg_plot)
 
+        self.div_report_title = Div(text="""<center>Classification Report</center>""", width = 600)
+
         tab_logreg = Panel(child=column(self.logreg_data_select, self.table_logreg,
                                         row(column(self.logreg_features_ms, self.normalize_logreg,
                                                    self.logreg_target_ms, self.button_logreg),
-                                            column(self.table_class_rep, self.logreg_cm_plot, self.logreg_roc_plot))),
+                                            column(self.div_report_title, self.table_class_rep, self.logreg_cm_plot,
+                                                   self.logreg_roc_plot))),
                            title="Logistic Regression")
 
         return tab_logreg
@@ -699,7 +707,7 @@ class clustering(plot_attributes):
     """
 
     Tab for Clustering
-    
+
     """
     def __init__(self):
         self.source_clustering = None
@@ -806,6 +814,10 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering):
         self.x_axis_format = BasicTickFormatter(use_scientific=False)
         self.y_axis_format = BasicTickFormatter(use_scientific=False)
         self.title_align = 'center'
+        self.text_font_size = '12pt'
+        self.text_font = 'times'
+        self.axis_label_text_font = 'times'
+        self.axis_label_text_font_size = "12pt"
 
     def run_tool(self):
         eda_tab = self.exploration_plots()
