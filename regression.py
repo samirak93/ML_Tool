@@ -2,6 +2,7 @@ from bokeh.palettes import RdBu
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 
 import numpy as np
@@ -38,9 +39,16 @@ def get_corr_plot(df):
     return top, bottom, left, right, labels, nlabels, color_list, corr.values.flatten()
 
 
-def get_regression_plot(features_df, target_df):
+def get_regression_plot(features_df, target_df, active_norm):
 
     X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.2, random_state=40)
+
+    if active_norm == 1:
+        X_train = StandardScaler().fit_transform(X_train)
+        X_test = StandardScaler().fit_transform(X_test)
+    else:
+        X_train = X_train
+        X_test = X_test
 
     regressor = LinearRegression(normalize=True, n_jobs=-1)
     regressor.fit(X_train, y_train)
@@ -58,4 +66,4 @@ def get_regression_plot(features_df, target_df):
     MSE = np.round(metrics.mean_squared_error(y_test, y_pred),2)
     RMSE = np.round(np.sqrt(metrics.mean_squared_error(y_test, y_pred)),2)
 
-    return y_test, y_pred, text, MAE, RMSE, residual
+    return y_test, y_pred, text, MAE, RMSE, residual, slope, intercept

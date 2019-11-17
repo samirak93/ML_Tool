@@ -1,14 +1,23 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
 
 import pandas as pd
 import numpy as np
 
 
-def get_logreg_output(features_df, target_df):
+def get_logreg_output(features_df, target_df, active_norm):
 
     X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.2, random_state=40)
+
+    if active_norm == 1:
+        X_train = pd.DataFrame(StandardScaler().fit_transform(X_train))
+        X_test = pd.DataFrame(StandardScaler().fit_transform(X_test))
+    else:
+        X_train = X_train
+        X_test = X_test
+
     logreg = LogisticRegression(class_weight='balanced', n_jobs=-1)
     logreg.fit(X_train, y_train)
     y_pred = logreg.predict(X_test)
@@ -17,7 +26,7 @@ def get_logreg_output(features_df, target_df):
     class_report_df = pd.DataFrame(class_report)
     class_report_df.columns = class_report_df.columns.str.upper()
     class_report_df.index = class_report_df.index.str.upper()
-    class_report_df= class_report_df.round(3).transpose().\
+    class_report_df = class_report_df.round(3).transpose().\
         reset_index().rename(columns={'index': ""})
 
     confusion_matrix = metrics.confusion_matrix(y_test, y_pred)
