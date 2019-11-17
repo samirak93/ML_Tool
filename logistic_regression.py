@@ -18,7 +18,7 @@ def get_logreg_output(features_df, target_df, active_norm):
         X_train = X_train
         X_test = X_test
 
-    logreg = LogisticRegression(class_weight='balanced', n_jobs=-1)
+    logreg = LogisticRegression(class_weight='balanced', n_jobs=-1, solver='lbfgs', max_iter=500)
     logreg.fit(X_train, y_train)
     y_pred = logreg.predict(X_test)
     accuracy_score = np.round(logreg.score(X_test, y_test), 2)
