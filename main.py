@@ -1,9 +1,9 @@
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, NumeralTickFormatter, \
-                            LegendItem, Span, BasicTicker, LabelSet, BasicTickFormatter
+    LegendItem, Span, BasicTicker, LabelSet, BasicTickFormatter
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
-                                 CheckboxGroup
+    CheckboxGroup
 from bokeh.layouts import column, row
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
@@ -19,6 +19,7 @@ from regression import get_corr_plot, get_regression_plot, get_colors
 from logistic_regression import get_logreg_output
 
 import warnings
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 """
@@ -28,16 +29,11 @@ CODE
 
 
 class plot_attributes(object):
+    """
 
-    def __init__(self, background_color='whitesmoke', border_fill_color='whitesmoke',
-                 x_axis_format=BasicTickFormatter(use_scientific=False),
-                 y_axis_format=BasicTickFormatter(use_scientific=False), title_align='center'):
-        self.background_fill_color = background_color
-        self.border_fill_color = border_fill_color
-        self.x_axis_format = x_axis_format
-        self.y_axis_format = y_axis_format
-        self.title_align = title_align
+    Generic attributes of the plot figures
 
+    """
     def plot_format(self, plot):
         plot.background_fill_color = self.background_fill_color
         plot.border_fill_color = self.border_fill_color
@@ -49,7 +45,11 @@ class plot_attributes(object):
 
 
 class eda_plots(plot_attributes):
+    """
 
+    Exploratory tab
+
+    """
     def __init__(self):
 
         self.active_df = None
@@ -215,7 +215,8 @@ class eda_plots(plot_attributes):
         hover_hist = HoverTool(
             tooltips=[("X", "@left{1.11} ~ @right{1.11}"),
                       ("Y", "@top{int}")])
-        self.plot_hist = figure(title='Histogram', plot_height=600, plot_width=800, tools=['pan,box_zoom,reset'] + [hover_hist])
+        self.plot_hist = figure(title='Histogram', plot_height=600, plot_width=800,
+                                tools=['pan,box_zoom,reset'] + [hover_hist])
         self.plot_hist.quad(top='top', bottom=0, left='left', right='right', source=self.source_histogram,
                             fill_color='dodgerblue', line_color="white", fill_alpha=0.8)
         self.plot_hist = self.plot_format(self.plot_hist)
@@ -223,7 +224,7 @@ class eda_plots(plot_attributes):
         self.plot_hist.min_border_bottom = 50
 
         self.explore_data_select = Select(title="Dataset:", value="Select dataset",
-                                     options=["Select dataset"] + list(self.eda_data_source.keys()))
+                                          options=["Select dataset"] + list(self.eda_data_source.keys()))
         self.select_x_axis = Select(title="X-Axis:", value="None", options=["None"])
         self.select_y_axis = Select(title="Y-Axis:", value="None", options=["None"])
         self.select_color = Select(title="Color:", value="None", options=["None"])
@@ -231,7 +232,8 @@ class eda_plots(plot_attributes):
         self.button_eda_plot.disabled = True
 
         self.select_hist = Select(title="Histogram Value:", value="None", options=["None"])
-        self.slider_bins = Slider(title="Histogram Bins", value=20, start=5.0, end=50, step=1, callback_policy='mouseup')
+        self.slider_bins = Slider(title="Histogram Bins", value=20, start=5.0, end=50, step=1,
+                                  callback_policy='mouseup')
 
         self.log_x_cb = CheckboxGroup(labels=["Log transform x-axis"], active=[])
         self.log_y_cb = CheckboxGroup(labels=["Log transform y-axis"], active=[])
@@ -258,6 +260,11 @@ class eda_plots(plot_attributes):
 
 class linear_regression(plot_attributes):
 
+    """
+
+    Linear Regression Tab
+
+    """
     def __init__(self):
         self.color_bar = None
         self.plot_hist_resid = None
@@ -324,7 +331,7 @@ class linear_regression(plot_attributes):
             target_df = self.reg_df.loc[:, label]
 
             actual_reg, predict_reg, text, MAE, RMSE, residual, \
-                slope, intercept = get_regression_plot(features_df, target_df, active_norm)
+            slope, intercept = get_regression_plot(features_df, target_df, active_norm)
 
             self.plot_reg.x_range.start, self.plot_reg.x_range.end = actual_reg.min(), actual_reg.max()
             self.plot_reg.y_range.start, self.plot_reg.y_range.end = predict_reg.min(), predict_reg.max()
@@ -374,7 +381,8 @@ class linear_regression(plot_attributes):
         df_reg = pd.DataFrame()
         self.source_reg = ColumnDataSource(data=dict(df_reg))
         reg_columns = [TableColumn(field=cols, title=cols) for cols in df_reg.columns]
-        self.table_reg = DataTable(source=self.source_reg, columns=reg_columns, width=1200, height=300, fit_columns=False)
+        self.table_reg = DataTable(source=self.source_reg, columns=reg_columns, width=1200, height=300,
+                                   fit_columns=False)
 
         top, bottom, left, right, color, corr = [], [], [], [], [], []
         self.source_corr = ColumnDataSource(
@@ -407,11 +415,13 @@ class linear_regression(plot_attributes):
             tooltips=[("Actual", "@actual{int}"),
                       ("Predicted", "@predict{int}")])
 
-        self.plot_reg = figure(plot_height=500, plot_width=900, tools=['pan,box_zoom,reset,wheel_zoom'] + [self.hover_reg])
+        self.plot_reg = figure(plot_height=500, plot_width=900,
+                               tools=['pan,box_zoom,reset,wheel_zoom'] + [self.hover_reg])
 
         self.reg_scatter = self.plot_reg.scatter(x='actual', y='predict', size=7, line_color="white", alpha=0.6,
-                                       hover_color='white',
-                                       hover_alpha=0.5, source=self.source_reg_scat, fill_color='dodgerblue', )
+                                                 hover_color='white',
+                                                 hover_alpha=0.5, source=self.source_reg_scat,
+                                                 fill_color='dodgerblue', )
 
         self.legend_reg = Legend(items=[LegendItem(label="", renderers=[self.reg_scatter])], location='bottom_right')
         self.plot_reg.add_layout(self.legend_reg)
@@ -423,7 +433,7 @@ class linear_regression(plot_attributes):
         self.source_reg_resid = ColumnDataSource(data=dict(predict=predict_reg, residual=residual))
 
         self.hover_resid = HoverTool(tooltips=[("Predicted", "@predict{int}"),
-                                          ("Residual", "@residual{int}")],
+                                               ("Residual", "@residual{int}")],
                                      names=['resid'])
 
         self.plot_resid = figure(plot_height=500, plot_width=700,
@@ -477,7 +487,10 @@ class linear_regression(plot_attributes):
 
 
 class logistic_regression(plot_attributes):
-
+    """
+    Tab for Logistic Regression
+    
+    """
     def __init__(self):
 
         self.active_df = None
@@ -562,7 +575,7 @@ class logistic_regression(plot_attributes):
             target_df = logreg_df.loc[:, label]
 
         accuracy_score, class_report_df, confusion_df, \
-            logit_roc_auc, fpr, tpr, thresholds = get_logreg_output(features_df, target_df, active_norm)
+        logit_roc_auc, fpr, tpr, thresholds = get_logreg_output(features_df, target_df, active_norm)
 
         self.source_class_rep.data = dict(class_report_df)
         self.table_class_rep.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
@@ -610,14 +623,15 @@ class logistic_regression(plot_attributes):
 
         self.logreg_cm_mapper = LinearColorMapper(palette=logreg_cm_colors, low=0, high=100)
 
-        self.labels_logreg_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0, y_offset=0,
-                                    source=self.source_logreg_cm, render_mode='canvas', text_align='center',
-                                    text_font='times',
-                                    text_color='#FF0000', text_font_style='bold', text_font_size='16px')
+        self.labels_logreg_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
+                                         y_offset=0,
+                                         source=self.source_logreg_cm, render_mode='canvas', text_align='center',
+                                         text_font='times',
+                                         text_color='#FF0000', text_font_style='bold', text_font_size='16px')
 
         self.hover_logreg_cm = HoverTool(tooltips=[("Actual", "@Actual"),
-                                              ("Predicted", "@Prediction"),
-                                              ("Value", "@value")])
+                                                   ("Predicted", "@Prediction"),
+                                                   ("Value", "@value")])
         self.logreg_cm_plot = figure(plot_width=400, plot_height=300, title="Confusion Matrix", toolbar_location=None,
                                      tools=[self.hover_logreg_cm], x_axis_location="above")
 
@@ -636,7 +650,7 @@ class logistic_regression(plot_attributes):
         self.logreg_cm_plot.min_border_top = 50
 
         self.hover_logreg_roc = HoverTool(tooltips=[("False Positive Rate", "@fpr_roc"),
-                                               ("True Positive Rate", "@tpr_roc")],
+                                                    ("True Positive Rate", "@tpr_roc")],
                                           names=['roc'])
 
         fpr_roc, tpr_roc = [], []
@@ -682,7 +696,11 @@ class logistic_regression(plot_attributes):
 
 
 class clustering(plot_attributes):
+    """
 
+    Tab for Clustering
+    
+    """
     def __init__(self):
         self.source_clustering = None
         self.clust_df = None
@@ -721,7 +739,8 @@ class clustering(plot_attributes):
             self.clust_df = clust_df
 
             self.source_clustering.data = dict(clust_df)
-            self.table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in self.clust_df.columns]
+            self.table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
+                                             self.clust_df.columns]
             self.clust_features_ms.options = ['ALL'] + list(clust_df.columns)
 
         else:
@@ -732,13 +751,13 @@ class clustering(plot_attributes):
         self.source_clustering = ColumnDataSource(data=dict(df_clustering))
         clust_columns = [TableColumn(field=cols, title=cols) for cols in df_clustering.columns]
         self.table_clustering = DataTable(source=self.source_clustering, columns=clust_columns, width=1200, height=300,
-                                     fit_columns=False)
+                                          fit_columns=False)
 
         tsne_x, tsne_y, cluster_col = [0], [0], [0]
         self.source_clust = ColumnDataSource(data=dict(x=tsne_x, y=tsne_y, cluster=cluster_col))
 
         self.hover_clust = HoverTool(tooltips=[("User", "$index"),
-                                          ("Cluster", "@cluster")])
+                                               ("Cluster", "@cluster")])
         self.mapper = linear_cmap(field_name='cluster', palette=Set1[9], low=min(cluster_col), high=max(cluster_col))
         self.clust_scat = figure(plot_height=600, plot_width=850, tools=['pan,box_zoom,reset,tap'] + [self.hover_clust])
         self.clust_scat.scatter("x", 'y', source=self.source_clust, color=self.mapper, size=10, legend='cluster')
@@ -751,7 +770,7 @@ class clustering(plot_attributes):
         self.clust_scat = self.plot_format(self.clust_scat)
 
         self.clus_data_select = Select(title="Dataset:", value="Select dataset",
-                                  options=["Select dataset"] + list(self.clustering_data_source.keys()))
+                                       options=["Select dataset"] + list(self.clustering_data_source.keys()))
         self.clust_features_ms = MultiSelect(title="Select features for clustering:", value=["ALL"], options=["ALL"])
         self.clust_norm_rbg = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
         self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, callback_policy='mouseup')
@@ -789,7 +808,6 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering):
         self.title_align = 'center'
 
     def run_tool(self):
-
         eda_tab = self.exploration_plots()
         linreg_tab = self.lin_reg()
         logreg_tab = self.logreg()
