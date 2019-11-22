@@ -19,6 +19,7 @@ from regression import get_corr_plot, get_regression_plot, get_colors
 from logistic_regression import get_logreg_output
 
 import warnings
+import os
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -140,7 +141,8 @@ class eda_plots(plot_attributes):
             self.source_scatter.data = dict(x=[], y=[], color=[])
             self.source_histogram.data = dict(top=[], left=[], right=[])
 
-            eda_df = pd.read_csv(self.data_path + str(self.eda_data_source.get(active_df)))
+            self.file_path = str(self.cwd+ self.data_path + str(self.eda_data_source.get(active_df)))
+            eda_df = pd.read_csv(self.file_path)
             eda_df = eda_df.fillna(eda_df.mean())
             eda_df.columns = [x.upper() for x in eda_df.columns]
             self.eda_df = eda_df
@@ -362,7 +364,9 @@ class linear_regression(plot_attributes):
         self.active_df = self.reg_data_select.value
 
         if self.active_df != "Select dataset":
-            reg_df = pd.read_csv(self.data_path + str(self.regression_data_source.get(self.active_df)))
+            self.file_path = str(self.cwd+ self.data_path + str(self.regression_data_source.get(self.active_df)))
+
+            reg_df = pd.read_csv(self.file_path)
             reg_df = reg_df.fillna(reg_df.mean())
             reg_df.columns = [x.upper() for x in reg_df.columns]
             self.reg_df = reg_df
@@ -533,7 +537,9 @@ class logistic_regression(plot_attributes):
         self.active_df = self.logreg_data_select.value
 
         if self.active_df != "Select dataset":
-            logreg_df = pd.read_csv(self.data_path + str(self.logreg_data_source.get(self.active_df)))
+            self.file_path = str(self.cwd + self.data_path + str(self.logreg_data_source.get(self.active_df)))
+
+            logreg_df = pd.read_csv(self.file_path)
             logreg_df = logreg_df.fillna(logreg_df.mean())
             logreg_df.columns = [x.upper() for x in logreg_df.columns]
             self.logreg_df = logreg_df
@@ -735,12 +741,13 @@ class clustering(plot_attributes):
         self.source_clust.data = source_clust_data
 
     def clustering_plot(self, attr, old, new):
-        active_df = str(self.clus_data_select.value)
+        self.active_df = str(self.clus_data_select.value)
 
-        if active_df != "Select dataset":
+        if self.active_df != "Select dataset":
             self.button_cluster.disabled = False
+            self.file_path = str(self.cwd + self.data_path + str(self.clustering_data_source.get(self.active_df)))
 
-            clust_df = pd.read_csv(self.data_path + str(self.clustering_data_source.get(active_df)))
+            clust_df = pd.read_csv(self.file_path)
             clust_df = clust_df.fillna(clust_df.mean())
             clust_df.columns = [x.upper() for x in clust_df.columns]
 
@@ -798,17 +805,63 @@ class clustering(plot_attributes):
         return tab_cluster
 
 
-class main_tool(eda_plots, linear_regression, logistic_regression, clustering):
-
+class classification(plot_attributes):
+    
     def __init__(self):
-        self.data_path = "ml_tool/data/"
+        self.source_classify = None
 
-        self.eda_data_source = {"Credit Card": "CC GENERAL.csv",
-                                "House Sales": "kc_house_data.csv",
-                                "Diabetes": "DIABETES.csv"}
+    def create_figure_classify(self, attr, old, new):
+        self.active_df = self.classify_data_select.value
+        
+        if self.active_df != "Select dataset":
+            self.file_path = str(self.cwd + self.data_path + str(self.classify_data_source.get(self.active_df)))
+            classify_df = pd.read_csv(self.file_path)
+            classify_df = classify_df.fillna(classify_df.mean())
+            classify_df.columns = [x.upper() for x in classify_df.columns]
+            self.classify_df = classify_df
+
+            self.source_classify.data = dict(classify_df)
+            self.table_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
+                                         self.classify_df.columns]
+
+    def classify(self):
+        df_classify = pd.DataFrame()
+        self.source_classify = ColumnDataSource(data=dict(df_classify))
+        classify_columns = [TableColumn(field=cols, title=cols) for cols in df_classify.columns]
+        self.table_classify = DataTable(source=self.source_classify, columns=classify_columns, width=1200, height=300,
+                                          fit_columns=False)
+
+        self.classify_data_select = Select(title="Dataset:", value="Select dataset",
+                                       options=["Select dataset"] + list(self.classify_data_source.keys()))
+
+        self.classify_data_select.on_change('value', self.create_figure_classify)
+        tab_classify = Panel(child = column(self.classify_data_select, self.table_classify), 
+                            title = "Classification")
+
+        return tab_classify
+
+
+class main_tool(eda_plots, linear_regression, logistic_regression, clustering, classification):
+
+    """
+        Add datasets in each dictionary based on the algorithm
+        eda_data_source: Can be any dataset for exploratory analysis
+        clustering_data_source: Dataset for clustering algorithm
+        regression_data_source: Dataset for linear regression algorithm
+        logreg_data_source: Dataset for logistic regression algorithm
+        classify_data_source: Dataset for multilabel classification algorithm
+
+    """ 
+    def __init__(self):
+        self.cwd = str(os.getcwd())
+        self.data_path = "/ML/Data/"
+        self.eda_data_source = {"Credit Card": "CC GENERAL.csv", "House Sales": "HOUSING PRICE.csv",
+                                "Diabetes": "DIABETES.csv", "Glass": "GLASS.csv"}
         self.clustering_data_source = {"Credit Card": "CC GENERAL.csv"}
-        self.regression_data_source = {"House Sales": "kc_house_data.csv"}
+        self.regression_data_source = {"House Sales": "HOUSING PRICE.csv"}
         self.logreg_data_source = {"Diabetes": "DIABETES.csv"}
+        self.classify_data_source = {"Glass": "GLASS.csv"}
+
         self.background_fill_color = 'whitesmoke'
         self.border_fill_color = 'whitesmoke'
         self.x_axis_format = BasicTickFormatter(use_scientific=False)
@@ -824,13 +877,15 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering):
         linreg_tab = self.lin_reg()
         logreg_tab = self.logreg()
         cluster_tab = self.cluster()
+        classify_tab = self.classify()
 
-        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, cluster_tab], tabs_location='above', sizing_mode='scale_both')
+        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, cluster_tab, classify_tab], 
+                    tabs_location='above', sizing_mode='scale_both')
 
         return tabs
-
 
 tabs = main_tool().run_tool()
 
 curdoc().add_root(tabs)
 curdoc().title = "ML APP"
+
