@@ -1,7 +1,7 @@
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
-from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, NumeralTickFormatter, \
-    LegendItem, Span, BasicTicker, LabelSet, BasicTickFormatter
+from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
+    LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
     CheckboxGroup
 from bokeh.layouts import column, row
@@ -825,7 +825,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering):
         logreg_tab = self.logreg()
         cluster_tab = self.cluster()
 
-        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, cluster_tab], tabs_location='above')
+        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, cluster_tab], tabs_location='above', sizing_mode='scale_both')
 
         return tabs
 

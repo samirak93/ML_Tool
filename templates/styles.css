@@ -1,3 +1,11 @@
+h1 {
+    margin: 1.5em 0 1.5em 0;
+    color: black;
+    font-family: 'times', sans-serif;
+    font-size: 1.4em;
+    text-transform: uppercase;
+}
+
 h2 {
     width: 100vw;
 }
