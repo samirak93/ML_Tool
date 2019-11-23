@@ -1009,7 +1009,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.clustering_data_source = {"Credit Card": "CC GENERAL.csv"}
         self.regression_data_source = {"House Sales": "HOUSING PRICE.csv"}
         self.logreg_data_source = {"Diabetes": "DIABETES.csv"}
-        self.classify_data_source = {"Glass": "GLASS.csv"}
+        self.classify_data_source = {"Glass Type": "GLASS.csv", "Mobile Prices": "MOBILE.csv"}
 
         self.background_fill_color = 'whitesmoke'
         self.border_fill_color = 'whitesmoke'
