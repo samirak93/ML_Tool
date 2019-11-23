@@ -8,7 +8,7 @@ import numpy as np
 
 def get_classify_output(features_df, target_df, active_norm):
 
-    X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.2, random_state=40)
+    X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.3, random_state=40)
 
     if active_norm == 1:
         X_train = pd.DataFrame(StandardScaler().fit_transform(X_train))
@@ -20,7 +20,7 @@ def get_classify_output(features_df, target_df, active_norm):
     random_forest = RandomForestClassifier(n_estimators=400, max_depth=10, random_state=0,
                                             class_weight='balanced', n_jobs=-1)
     random_forest.fit(X_train, y_train)
-    print (random_forest.feature_importances_)
+    
     y_pred = random_forest.predict(X_test)
     accuracy_score = np.round(random_forest.score(X_test, y_test), 2)
     class_report = metrics.classification_report(y_test, y_pred, output_dict=True)
@@ -40,4 +40,7 @@ def get_classify_output(features_df, target_df, active_norm):
 
     confusion_df = confusion_df.stack().rename("value").reset_index()
 
-    return accuracy_score, class_report_df, confusion_df
+    rf_feature_labels = features_df.columns.values.tolist()
+    rf_feature_importance = random_forest.feature_importances_.tolist()
+
+    return accuracy_score, class_report_df, confusion_df, rf_feature_labels, rf_feature_importance

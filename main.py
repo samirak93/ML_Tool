@@ -7,6 +7,8 @@ from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSe
 from bokeh.layouts import column, row
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
+from bokeh.models.ranges import FactorRange
+from bokeh.transform import factor_cmap
 
 from math import pi
 from collections import OrderedDict
@@ -31,11 +33,14 @@ CODE
 
 
 class plot_attributes(object):
-    """
-
-    Generic attributes of the plot figures
-
-    """
+    """[summary]
+    
+    Arguments:
+        object {plot} -- Unformatted plot
+    
+    Returns:
+        [figure] -- Formatted plot
+    """    
     def plot_format(self, plot):
         
         plot.background_fill_color = self.background_fill_color
@@ -52,13 +57,9 @@ class plot_attributes(object):
 
 
 class eda_plots(plot_attributes):
-    """
-
-    Exploratory tab
-
-    """
+  
     def __init__(self):
-
+               
         self.active_df = None
         self.source_eda = None
         self.select_hist = None
@@ -301,6 +302,7 @@ class linear_regression(plot_attributes):
         self.normalize_linreg = None
 
     def corr_plot(self, top, bottom, left, right, labels, nlabels, color_list, corr):
+               
         self.source_corr.data = dict(top=top, bottom=bottom, left=left, right=right, color=color_list, corr=corr)
         self.plot_corr.x_range.start, self.plot_corr.x_range.end = 0, nlabels
         self.plot_corr.y_range.start, self.plot_corr.y_range.end = 0, nlabels
@@ -651,6 +653,7 @@ class logistic_regression(plot_attributes):
 
         self.logreg_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_logreg_cm,
                                  line_color=None, fill_color=transform('value', self.logreg_cm_mapper))
+        self.logreg_cm_plot.y_range.flipped = True
 
         self.color_bar_logreg_cm = ColorBar(color_mapper=self.logreg_cm_mapper, location=(0, 0),
                                             ticker=BasicTicker(desired_num_ticks=len(logreg_cm_colors)),
@@ -658,6 +661,7 @@ class logistic_regression(plot_attributes):
 
         self.logreg_cm_plot.add_layout(self.color_bar_logreg_cm, 'right')
         self.color_bar_logreg_cm.background_fill_color = "whitesmoke"
+
         self.logreg_cm_plot = self.plot_format(self.logreg_cm_plot)
         self.logreg_cm_plot.add_layout(self.labels_logreg_cm)
         self.logreg_cm_plot.min_border_left = 50
@@ -809,7 +813,7 @@ class clustering(plot_attributes):
 
 
 class classification(plot_attributes):
-    
+ 
     def __init__(self):
         self.source_classify = None
 
@@ -870,7 +874,8 @@ class classification(plot_attributes):
 
             target_df = classify_df.loc[:, label]
 
-        accuracy_score, class_report_df, confusion_df = get_classify_output(features_df, target_df, active_norm)
+        accuracy_score, class_report_df, confusion_df, \
+            rf_feature_labels, rf_feature_importance = get_classify_output(features_df, target_df, active_norm)
 
         self.source_class_rep_classify.data = dict(class_report_df)
         self.table_class_rep_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
@@ -886,12 +891,16 @@ class classification(plot_attributes):
                                                                              confusion_df.Actual.max()
         self.classify_cm_plot.y_range.start, self.classify_cm_plot.y_range.end = confusion_df.Prediction.min(), \
                                                                              confusion_df.Prediction.max()
+
         self.classify_cm_plot.xaxis.ticker = sorted(target_df.unique())
         self.classify_cm_plot.yaxis.ticker = sorted(target_df.unique())
         self.classify_cm_plot.xaxis.axis_label = "Actual"
         self.classify_cm_plot.yaxis.axis_label = "Predicted"
 
         self.source_classify_cm.data = confusion_df
+
+        self.source_classify_fi.data = dict(rf_features = rf_feature_labels, rf_importance=rf_feature_importance)
+        self.classify_fi_plot.y_range.factors =  rf_feature_labels
 
     def classify(self):
         df_classify = pd.DataFrame()
@@ -911,7 +920,6 @@ class classification(plot_attributes):
         self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
 
         self.classify_cm_mapper = LinearColorMapper(palette=classify_cm_colors, low=0, high=100)
-
         self.labels_classify_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
                                          y_offset=-10,
                                          source=self.source_classify_cm, render_mode='canvas', text_align='center',
@@ -919,13 +927,13 @@ class classification(plot_attributes):
                                          text_color='#FF0000', text_font_style='bold', text_font_size='16px')
 
         self.hover_classify_cm = HoverTool(tooltips=[("Actual", "@Actual"),
-                                                   ("Predicted", "@Prediction"),
-                                                   ("Value", "@value")])
-        self.classify_cm_plot = figure(plot_width=400, plot_height=400, title="Confusion Matrix", toolbar_location=None,
+                                                    ("Predicted", "@Prediction"), 
+                                                    ("Value", "@value")])
+        self.classify_cm_plot = figure(plot_width=450, plot_height=450, title="Confusion Matrix", toolbar_location=None,
                                      tools=[self.hover_logreg_cm], x_axis_location="above")
-
         self.classify_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_classify_cm,
                                  line_color=None, fill_color=transform('value', self.classify_cm_mapper))
+        self.classify_cm_plot.y_range.flipped = True
 
         self.color_bar_classify_cm = ColorBar(color_mapper=self.classify_cm_mapper, location=(0, 0),
                                             ticker=BasicTicker(desired_num_ticks=len(classify_cm_colors)),
@@ -937,6 +945,27 @@ class classification(plot_attributes):
         self.classify_cm_plot.add_layout(self.labels_classify_cm)
         self.classify_cm_plot.min_border_left = 50
         self.classify_cm_plot.min_border_top = 50
+        self.classify_cm_plot.min_border_right = 50
+
+        rf_features = []
+        rf_importance = []
+
+        self.hover_classify_fi = HoverTool(tooltips=[("Feature", "@rf_features"),
+                                                    ("Importance Score", "@rf_importance{0.02f}")])
+        self.source_classify_fi = ColumnDataSource(data=dict(rf_features=rf_features, rf_importance=rf_importance))
+        self.classify_fi_plot = figure(y_range=rf_features,plot_width=450, plot_height=450, toolbar_location=None, 
+                                        title="Feature Importance", tools = [self.hover_classify_fi])
+        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance',left = 0, height=0.5, 
+                                   source=self.source_classify_fi, line_color='white', fill_color='dodgerblue')
+        self.classify_fi_plot.background_fill_color = self.background_fill_color
+        self.classify_fi_plot.border_fill_color = self.border_fill_color
+        self.classify_fi_plot.xaxis.formatter = self.x_axis_format
+        
+        self.classify_fi_plot.title.align = self.title_align
+        self.classify_fi_plot.title.text_font = self.text_font
+        self.classify_fi_plot.axis.axis_label_text_font = self.axis_label_text_font
+        self.classify_fi_plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
+        self.classify_fi_plot.title.text_font_size = self.text_font_size
 
         self.classify_data_select = Select(title="Dataset:", value="Select dataset",
                                        options=["Select dataset"] + list(self.classify_data_source.keys()))
@@ -945,7 +974,7 @@ class classification(plot_attributes):
 
         self.classify_target_ms = Select(title="Select target for Classification:", value="SELECT TARGET",
                                        options=["SELECT TARGET"])
-        self.button_classify = Button(label="Calculate classification")
+        self.button_classify = Button(label="Perform classification")
         self.button_classify.disabled = True
 
         self.classify_data_select.on_change('value', self.create_figure_classify)
@@ -954,7 +983,8 @@ class classification(plot_attributes):
 
         tab_classify = Panel(child = column(self.classify_data_select, self.table_classify, 
                                             row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms, 
-                                            self.button_classify), column(self.table_class_rep_classify, self.classify_cm_plot))), 
+                                            self.button_classify), column(self.table_class_rep_classify, 
+                                            row(self.classify_cm_plot, self.classify_fi_plot)))), 
                             title = "Classification")
 
         return tab_classify
