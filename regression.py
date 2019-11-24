@@ -2,14 +2,16 @@ from bokeh.palettes import RdBu
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelBinarizer, OneHotEncoder, LabelEncoder
 from sklearn import metrics
 
+import pandas as pd
 import numpy as np
 import bisect
 
 from numpy import arange
 from itertools import chain
+from collections import defaultdict
 
 def get_bounds(nlabels):
     bottom = list(chain.from_iterable([[ii]*nlabels for ii in range(nlabels)]))
@@ -27,8 +29,8 @@ def get_colors(corr_array, colors, min, max):
 
     return color
 
-
 def get_corr_plot(df):
+
     corr = df.corr()
     colors = list(reversed(RdBu[9]))
     labels = df.columns
@@ -38,8 +40,21 @@ def get_corr_plot(df):
 
     return top, bottom, left, right, labels, nlabels, color_list, corr.values.flatten()
 
-
 def get_regression_plot(features_df, target_df, active_norm):
+
+    non_num_features = [col for col, dt in features_df.dtypes.items() if dt == object]
+    likely_cat = {}
+    for var in features_df.columns:
+                likely_cat[var] = features_df[var].nunique() <= 100
+    likely_cat = [k for k, v in likely_cat.items() if v is True]
+    non_num_features = list(set(non_num_features + likely_cat))
+
+    if list(non_num_features):
+    
+        lb_results_df = pd.DataFrame(pd.get_dummies(features_df[non_num_features]))
+
+        features_df = features_df.drop(columns=non_num_features)
+        features_df = pd.concat([features_df, lb_results_df], axis=1)
 
     X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.2, random_state=40)
 

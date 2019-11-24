@@ -114,6 +114,7 @@ h4 {
 }
 
 .bk-root .bk-data-table {
+    display: block; 
     box-sizing: content-box;
     font-size: 13px;
     width: fit-content;
@@ -150,3 +151,21 @@ div.chart_div table {
     background-color: #05b7ff;
     border-color: #adadad;
 }
+
+.custom_slider {
+    background-color: whitesmoke;
+    color: black;
+    width: 200px;
+    }
+    
+.custom_slider .bk-noUi-target{
+    background:whitesmoke;
+    }
+    
+.custom_slider .bk-noUi-connect {
+    background-color: #05b7ff !important;
+    }
+    
+.custom_slider .bk-noUi-handle {
+    background:whitesmoke;
+    }

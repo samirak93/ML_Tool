@@ -1,14 +1,17 @@
+# -*- coding: utf-8 -*-
+
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
     LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
-    CheckboxGroup
+    CheckboxGroup, PreText
 from bokeh.layouts import column, row
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
 from bokeh.models.ranges import FactorRange
 from bokeh.transform import factor_cmap
+from bokeh.models.callbacks import CustomJS
 
 from math import pi
 from collections import OrderedDict
@@ -31,12 +34,11 @@ CODE
 
 """
 
-
 class plot_attributes(object):
     """[summary]
     
     Arguments:
-        object {plot} -- Unformatted plot
+        object {figure} -- Unformatted plot
     
     Returns:
         [figure] -- Formatted plot
@@ -242,7 +244,7 @@ class eda_plots(plot_attributes):
 
         self.select_hist = Select(title="Histogram Value:", value="None", options=["None"])
         self.slider_bins = Slider(title="Histogram Bins", value=20, start=5.0, end=50, step=1,
-                                  callback_policy='mouseup')
+                                  callback_policy='mouseup', css_classes=['custom_slider'])
 
         self.log_x_cb = CheckboxGroup(labels=["Log transform x-axis"], active=[])
         self.log_y_cb = CheckboxGroup(labels=["Log transform y-axis"], active=[])
@@ -378,7 +380,12 @@ class linear_regression(plot_attributes):
             self.table_reg.columns = [TableColumn(field=cols, title=cols, width=90) for cols in reg_df.columns]
 
             self.reg_features_ms.options = ['ALL'] + list(reg_df.columns)
-            self.reg_target_ms.options = ['SELECT TARGET'] + list(reg_df.columns)
+
+            likely_target = {}
+            for var in self.reg_df.columns:
+                        likely_target[var] = self.reg_df[var].nunique() > self.reg_df.shape[0]*0.1
+            likely_target = [k for k, v in likely_target.items() if v is True]
+            self.reg_target_ms.options = ['SELECT TARGET'] + list(likely_target)
 
             top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(reg_df)
             self.corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr)
@@ -406,13 +413,14 @@ class linear_regression(plot_attributes):
                                 toolbar_location='left', tools=[self.hover_corr])
 
         self.plot_corr.quad(top='top', bottom='bottom', left='left',
-                            right='right', color='color', line_color='white', source=self.source_corr)
+                            right='right', color='color', line_color='black', source=self.source_corr)
         self.plot_corr = self.plot_format(self.plot_corr)
         self.plot_corr.xgrid.grid_line_color = None
         self.plot_corr.ygrid.grid_line_color = None
         self.plot_corr.xaxis.major_label_orientation = pi / 4
         self.plot_corr.min_border_left = 110
         self.plot_corr.min_border_bottom = 110
+        self.plot_corr.y_range.flipped = True
 
         corr_colors = list(reversed(RdBu[9]))
         mapper = LinearColorMapper(palette=corr_colors, low=-1, high=1)
@@ -747,6 +755,12 @@ class clustering(plot_attributes):
                                             self.clustering_data_source, self.mapper, self.clust_scat, self.div_loading)
         self.source_clust.data = source_clust_data
 
+        
+        self.callback = CustomJS(args={}, code='alert(cb_obj.text);')
+        self.callback_holder.js_on_change('text', self.callback)        
+        self.callback_holder.text = "Alert!!!"
+        print (True)
+
     def clustering_plot(self, attr, old, new):
         self.active_df = str(self.clus_data_select.value)
 
@@ -764,7 +778,7 @@ class clustering(plot_attributes):
             self.table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
                                              self.clust_df.columns]
             self.clust_features_ms.options = ['ALL'] + list(clust_df.columns)
-
+            
         else:
             self.button_cluster.disabled = True
 
@@ -795,7 +809,8 @@ class clustering(plot_attributes):
                                        options=["Select dataset"] + list(self.clustering_data_source.keys()))
         self.clust_features_ms = MultiSelect(title="Select features for clustering:", value=["ALL"], options=["ALL"])
         self.clust_norm_rbg = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
-        self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, callback_policy='mouseup')
+        self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, 
+                                    callback_policy='mouseup', css_classes=['custom_slider'])
         self.button_cluster = Button(label="Calculate and plot clusters")
         self.button_cluster.disabled = True
 
@@ -804,10 +819,12 @@ class clustering(plot_attributes):
 
         self.div_loading = Div(text="""""")
 
+        self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
+
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
                                                     self.button_cluster, self.div_loading),
-                                             column(self.clust_scat))), title="Clustering")
+                                             column(self.clust_scat)), self.callback_holder), title="Clustering")
 
         return tab_cluster
 
@@ -1004,8 +1021,10 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
     def __init__(self):
         self.cwd = str(os.getcwd())
         self.data_path = "/ML/Data/"
-        self.eda_data_source = {"Credit Card": "CC GENERAL.csv", "House Sales": "HOUSING PRICE.csv",
-                                "Diabetes": "DIABETES.csv", "Glass": "GLASS.csv"}
+        self.eda_data_source = {"Credit Card (Clustering)": "CC GENERAL.csv", 
+                                "House Sales (Lin. Reg.)": "HOUSING PRICE.csv",
+                                "Diabetes (Log. Reg.)": "DIABETES.csv", 
+                                "Glass Type (Classification)": "GLASS.csv"}
         self.clustering_data_source = {"Credit Card": "CC GENERAL.csv"}
         self.regression_data_source = {"House Sales": "HOUSING PRICE.csv"}
         self.logreg_data_source = {"Diabetes": "DIABETES.csv"}
@@ -1020,6 +1039,10 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.text_font = 'times'
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
+
+        # self.callback_holder = PreText(text='', css_classes=['hidden'])
+        # self.callback = CustomJS(args={}, code='console.log("Alert!");')#alert(cb_obj.text)
+        # self.callback_holder.js_on_change('text', self.callback)        
 
     def run_tool(self):
         eda_tab = self.exploration_plots()
