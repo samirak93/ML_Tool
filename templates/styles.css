@@ -66,9 +66,10 @@ h4 {
 }
 
 .bk-root .bk-tabs-header.bk-above .bk-tab {
-    border-width: 3px 3px 0px 1px;
-    border-radius: 4px 4px 0 0;
+    border-width: 1.5px 1.5px 1.5px 1.5px;
+    border-radius: 4px 4px 0px 0px;
     font-size: 16px;
+    border-style: outset;    
 }
 /* Tab sizes */
 
@@ -87,14 +88,18 @@ h4 {
       display : block;
       margin : auto auto;
       text-align: center;
-      width: 1400px;
+      width: max-content;
       }
 .bk-root .bk-tabs-header.bk-left .bk-tab {
     border-width: 10px 10px 10px 10px;
     border-radius: 0 0 0 0px;
     text-align: left;
 }
-
+.bk-root .bk-tabs-header .bk-tab:hover {
+    background-color: #05b7ff;
+    border-color: whitesmoke;
+    color: black;
+}
 .bk-root .bk-btn {
     height: 100%;
     display: inline-block;

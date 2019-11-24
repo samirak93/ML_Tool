@@ -204,7 +204,7 @@ class eda_plots(plot_attributes):
         self.source_eda = ColumnDataSource(data=dict(df_exploration))
         eda_columns = [TableColumn(field=cols, title=cols) for cols in df_exploration.columns]
         self.table_eda = DataTable(source=self.source_eda, columns=eda_columns, width=1200,
-                                   height=300, fit_columns=False)
+                                   height=300, fit_columns=True)
 
         x_scat, y_scat, scat_color = [], [], []
         self.source_scatter = ColumnDataSource(data=dict(x=x_scat, y=y_scat, color=scat_color))
@@ -402,7 +402,7 @@ class linear_regression(plot_attributes):
         self.source_reg = ColumnDataSource(data=dict(df_reg))
         reg_columns = [TableColumn(field=cols, title=cols) for cols in df_reg.columns]
         self.table_reg = DataTable(source=self.source_reg, columns=reg_columns, width=1200, height=300,
-                                   fit_columns=False)
+                                   fit_columns=True)
 
         top, bottom, left, right, color, corr = [], [], [], [], [], []
         self.source_corr = ColumnDataSource(
@@ -634,13 +634,13 @@ class logistic_regression(plot_attributes):
         self.source_logreg = ColumnDataSource(data=dict(df_logreg))
         logreg_columns = [TableColumn(field=cols, title=cols) for cols in df_logreg.columns]
         self.table_logreg = DataTable(source=self.source_logreg, columns=logreg_columns, width=1200, height=300,
-                                      fit_columns=False)
+                                      fit_columns=True)
 
         df_class_report = pd.DataFrame()
         self.source_class_rep_logreg = ColumnDataSource(data=dict(df_class_report))
         class_rep_columns_logreg = [TableColumn(field=cols, title=cols) for cols in df_class_report.columns]
-        self.table_class_rep_logreg = DataTable(source=self.source_class_rep_logreg, columns=class_rep_columns_logreg, width=600, height=200,
-                                         fit_columns=True)
+        self.table_class_rep_logreg = DataTable(source=self.source_class_rep_logreg, columns=class_rep_columns_logreg, 
+                                                width=600, height=200, fit_columns=True)
 
         logreg_cm_colors = list(reversed(Blues[9]))
         actual_cm, predicted_cm, value_cm = [], [], []
@@ -760,7 +760,7 @@ class clustering(plot_attributes):
         self.callback = CustomJS(args={}, code='alert(cb_obj.text);')
         self.callback_holder.js_on_change('text', self.callback)        
         self.callback_holder.text = "Alert!!!"
-        print (True)
+        
 
     def clustering_plot(self, attr, old, new):
         self.active_df = str(self.clus_data_select.value)
@@ -788,7 +788,7 @@ class clustering(plot_attributes):
         self.source_clustering = ColumnDataSource(data=dict(df_clustering))
         clust_columns = [TableColumn(field=cols, title=cols) for cols in df_clustering.columns]
         self.table_clustering = DataTable(source=self.source_clustering, columns=clust_columns, width=1200, height=300,
-                                          fit_columns=False)
+                                          fit_columns=True)
 
         tsne_x, tsne_y, cluster_col = [0], [0], [0]
         self.source_clust = ColumnDataSource(data=dict(x=tsne_x, y=tsne_y, cluster=cluster_col))
@@ -925,7 +925,7 @@ class classification(plot_attributes):
         self.source_classify = ColumnDataSource(data=dict(df_classify))
         classify_columns = [TableColumn(field=cols, title=cols) for cols in df_classify.columns]
         self.table_classify = DataTable(source=self.source_classify, columns=classify_columns, width=1200, height=300,
-                                          fit_columns=False)
+                                          fit_columns=True)
 
         df_class_report = pd.DataFrame()
         self.source_class_rep_classify = ColumnDataSource(data=dict(df_class_report))
