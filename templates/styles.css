@@ -60,16 +60,17 @@ h4 {
     font-size: 14px;
 }
 .bk-root .bk-tabs-header .bk-tab.bk-active {
-    color: black;
-    background-color: #05b7ff;
-    border-color: #05b7ff;
+    color: white;
+    background-color: dodgerblue; 
+    /* ##007bff */
+    border-color: dodgerblue;
 }
 
 .bk-root .bk-tabs-header.bk-above .bk-tab {
-    border-width: 1.5px 1.5px 1.5px 1.5px;
-    border-radius: 4px 4px 0px 0px;
+    border-width: 0 0 0 0;
+    border-radius: 4px 4px 4px 4px;
     font-size: 16px;
-    border-style: outset;    
+    /* border-style: outset;     */
 }
 /* Tab sizes */
 
@@ -79,6 +80,17 @@ h4 {
     border: solid;
     white-space: nowrap;
     cursor: pointer;
+    color: black;
+}
+.bk-root .bk-tabs-header.bk-left .bk-tab {
+    border-width: 10px 10px 10px 10px;
+    border-radius: 0 0 0 0px;
+    text-align: left;
+}
+.bk-root .bk-tabs-header .bk-tab:hover {
+    background-color: dodgerblue;
+    border-color: whitesmoke;
+    color: white;
 }
 
 .bk-plot-wrapper table {
@@ -90,33 +102,6 @@ h4 {
       text-align: center;
       width: max-content;
       }
-.bk-root .bk-tabs-header.bk-left .bk-tab {
-    border-width: 10px 10px 10px 10px;
-    border-radius: 0 0 0 0px;
-    text-align: left;
-}
-.bk-root .bk-tabs-header .bk-tab:hover {
-    background-color: #05b7ff;
-    border-color: whitesmoke;
-    color: black;
-}
-.bk-root .bk-btn {
-    height: 100%;
-    display: inline-block;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-    cursor: pointer;
-    padding: 6px 12px;
-    font-size: 15px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    outline: 0;
-    user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-}
 
 .bk-root .bk-data-table {
     display: block; 
@@ -143,18 +128,39 @@ div.chart_div table {
             background-color: whitesmoke !important;
             background-image: none !important;
           }
+
+.bk-root .bk-btn {
+            height: 100%;
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+            cursor: pointer;
+            padding: 6px 12px;
+            font-size: 15px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            outline: 0;
+            user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+}
+        
 .bk-root .bk-btn-default {
-    color: #333;
+    color: black;
     background-color: none;
     border-color: #ccc;
 }
 .bk-root .bk-btn-default:hover {
-    background-color: #05b7ff;
+    background-color: dodgerblue;
     border-color: #b8b8b8;
+    color: white;
 }
 .bk-root .bk-btn-default.bk-active {
-    background-color: #05b7ff;
+    background-color: dodgerblue;
     border-color: #adadad;
+    color: white;
 }
 
 .custom_slider {
@@ -168,9 +174,9 @@ div.chart_div table {
     }
     
 .custom_slider .bk-noUi-connect {
-    background-color: #05b7ff !important;
+    background-color: dodgerblue !important;
     }
     
 .custom_slider .bk-noUi-handle {
-    background:whitesmoke;
+    background:white;
     }

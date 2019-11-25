@@ -7,7 +7,7 @@ from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMappe
     LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
     CheckboxGroup, PreText
-from bokeh.layouts import column, row
+from bokeh.layouts import column, row, widgetbox
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
 from bokeh.models.ranges import FactorRange
@@ -226,7 +226,7 @@ class eda_plots(plot_attributes):
 
         hover_hist = HoverTool(
             tooltips=[("X", "@left{1.11} ~ @right{1.11}"),
-                      ("Y", "@top{int}")])
+                      ("Count", "@top{int}")])
         self.plot_hist = figure(title='Histogram', plot_height=600, plot_width=800,
                                 tools=['pan,box_zoom,reset'] + [hover_hist])
         self.plot_hist.quad(top='top', bottom=0, left='left', right='right', source=self.source_histogram,
@@ -755,12 +755,10 @@ class clustering(plot_attributes):
         source_clust_data = clustering_data(self.clust_df, active_features, active_norm, active_clust_no,
                                             self.clustering_data_source, self.mapper, self.clust_scat, self.div_loading)
         self.source_clust.data = source_clust_data
-
         
         self.callback = CustomJS(args={}, code='alert(cb_obj.text);')
         self.callback_holder.js_on_change('text', self.callback)        
         self.callback_holder.text = "Alert!!!"
-        
 
     def clustering_plot(self, attr, old, new):
         self.active_df = str(self.clus_data_select.value)
