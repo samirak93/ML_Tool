@@ -6,20 +6,16 @@ h1 {
     font-size: 1.4em;
     text-transform: uppercase;
 }
-
-/* h2 {
-    width: 100vw;
-}
-h4 {
-    width: 100vw;
-} */
 .bk-root {
+    z-index: 2;
+    display: inherit;
     padding: 20px;
     font-family: times;
     position: relative;
     font-size: 12pt;
-    width: auto;
-    height: auto;
+    width: 100%;
+    min-height: auto;
+    background-color: whitesmoke;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 8px 0 rgba(0, 0, 0, 0.19);
     
 }
@@ -43,57 +39,57 @@ h4 {
     padding: 0;
     height: 30px;
     color: whitesmoke;
-    background-color: #05b7ff;
+    background-color: dodgerblue;
     border: 1px solid #ccc;
     border-radius: 40px;
     border-color: whitesmoke;
 }
 .bk-root .bk-bs-btn-default.bk-bs-active{
     color: whitesmoke;
-    background-color: #05b7ff;
+    background-color: dodgerblue;
     border-color: whitesmoke;
-      -webkit-appearance: none;
+    -webkit-appearance: none;
     font-size: 14px;
 }
 
 .bk-root .bk-bs-btn-default {
-    color: #333;
+    color: black;
     background-color: whitesmoke;
     border-color: #ccc;
     margin-top: 17px;
     font-size: 14px;
 }
+
 .bk-root .bk-tabs-header .bk-tab.bk-active {
-    color: white;
-    background-color: dodgerblue; 
-    /* ##007bff */
+    background-color: dodgerblue;
     border-color: dodgerblue;
+    color: white;
+    border-width: 0 0 1px 0;
+    border-radius: 0 0 0 0;
 }
 
 .bk-root .bk-tabs-header.bk-above .bk-tab {
-    border-width: 0 0 0 0;
-    border-radius: 4px 4px 4px 4px;
-    font-size: 16px;
-    /* border-style: outset;     */
+    font-size: 17px;
+    border-width: 0 0 1px 0;
+    border-radius: 0 0 0 0;
+    border-color: black;
 }
 /* Tab sizes */
 
 .bk-root .bk-tabs-header .bk-tab {
-    /*padding: 5px 80px;*/
     width:100%;
-    border: solid;
     white-space: nowrap;
     cursor: pointer;
     color: black;
 }
-.bk-root .bk-tabs-header.bk-left .bk-tab {
-    border-width: 10px 10px 10px 10px;
+/* .bk-root .bk-tabs-header.bk-left .bk-tab {
+    border-width: 0 0 0px 0;
     border-radius: 0 0 0 0px;
     text-align: left;
-}
+} */
 .bk-root .bk-tabs-header .bk-tab:hover {
     background-color: dodgerblue;
-    border-color: whitesmoke;
+    border-color: dodgerblue;
     color: white;
 }
 
@@ -113,7 +109,7 @@ h4 {
 .bk-root .bk-data-table {
     display: block; 
     box-sizing: content-box;
-    font-size: 13px;
+    font-size: 14px;
     width: fit-content;
     background-color: whitesmoke;
 }
@@ -190,13 +186,11 @@ div.chart_div table {
 .content{
     height: 60px;
     width: 100%;
-    background-color: whitesmoke !important;
     color: black;
     text-align: center;
-    display: table;
-    /* box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 8px 0 rgba(0, 0, 0, 0.19); */
-
+    position: absolute;
 }
 body {
     padding-bottom: 80px;
+    background-color: white;
 }

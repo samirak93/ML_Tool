@@ -498,7 +498,7 @@ class linear_regression(plot_attributes):
         self.reg_target_ms.on_change('value', self.button_enable)
         self.button_reg.on_click(self.reg_plot)
 
-        self.div_whitespace = Div(text="""""", height = 300)
+        self.div_whitespace = Div(text="""""", height = 100)
 
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
@@ -663,7 +663,7 @@ class logistic_regression(plot_attributes):
                                      tools=[self.hover_logreg_cm], x_axis_location="above")
 
         self.logreg_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_logreg_cm,
-                                 line_color=None, fill_color=transform('value', self.logreg_cm_mapper))
+                                 line_color='black', fill_color=transform('value', self.logreg_cm_mapper))
         self.logreg_cm_plot.y_range.flipped = True
 
         self.color_bar_logreg_cm = ColorBar(color_mapper=self.logreg_cm_mapper, location=(0, 0),
@@ -950,7 +950,7 @@ class classification(plot_attributes):
         self.classify_cm_plot = figure(plot_width=450, plot_height=450, title="Confusion Matrix", toolbar_location=None,
                                      tools=[self.hover_logreg_cm], x_axis_location="above")
         self.classify_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_classify_cm,
-                                 line_color=None, fill_color=transform('value', self.classify_cm_mapper))
+                                 line_color='black', fill_color=transform('value', self.classify_cm_mapper))
         self.classify_cm_plot.y_range.flipped = True
 
         self.color_bar_classify_cm = ColorBar(color_mapper=self.classify_cm_mapper, location=(0, 0),
@@ -1053,7 +1053,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         classify_tab = self.classify()
 
         tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, classify_tab, cluster_tab],
-                    tabs_location='above')
+                    tabs_location='above', sizing_mode='scale_both')
 
         return tabs
 

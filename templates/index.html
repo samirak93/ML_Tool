@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=yes">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/flatly/bootstrap.min.css"
         integrity="sha256-0mhswpc4tUm8b+EHmWyk817AlGI+X5NmVsKbJkQ342c=" crossorigin="anonymous" />
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"
-        crossorigin="anonymous" />
+        <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"
+        crossorigin="anonymous" /> -->
         <style>
             body { background: whitesmoke; }
         </style>
@@ -17,6 +17,8 @@
         </style>
     </head>
     <body class="centered">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=yes">
+
         <h1><center>Machine Learning Tool</center></h1>
         {{ plot_div|indent(8) }}
         {{ plot_script|indent(8) }}
