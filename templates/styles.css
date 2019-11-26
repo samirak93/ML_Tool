@@ -194,3 +194,8 @@ body {
     padding-bottom: 80px;
     background-color: white;
 }
+.bk-root .bk-input-group input[type="checkbox"] + span, .bk-root .bk-input-group input[type="radio"] + span {
+    position: relative;
+    top: 0px;
+    margin-left: 4px;
+}

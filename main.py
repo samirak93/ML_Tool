@@ -247,8 +247,8 @@ class eda_plots(plot_attributes):
         self.slider_bins = Slider(title="Histogram Bins", value=20, start=5.0, end=50, step=1,
                                   callback_policy='mouseup', css_classes=['custom_slider'])
 
-        self.log_x_cb = CheckboxGroup(labels=["Log transform x-axis"], active=[])
-        self.log_y_cb = CheckboxGroup(labels=["Log transform y-axis"], active=[])
+        self.log_x_cb = CheckboxGroup(labels=["Log transform: x-axis"], active=[])
+        self.log_y_cb = CheckboxGroup(labels=["Log transform: y-axis"], active=[])
         self.log_hist_cb = CheckboxGroup(labels=["Log transform axis"], active=[])
 
         self.button_hist_plot = Button(label="Draw Histogram")
