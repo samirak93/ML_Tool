@@ -1,4 +1,5 @@
 h1 {
+    padding-bottom: 10px;
     margin: 1.5em 0 1.5em 0;
     color: black;
     font-family: 'times', sans-serif;
@@ -6,18 +7,21 @@ h1 {
     text-transform: uppercase;
 }
 
-h2 {
+/* h2 {
     width: 100vw;
 }
 h4 {
     width: 100vw;
-}
+} */
 .bk-root {
+    padding: 20px;
     font-family: times;
     position: relative;
     font-size: 12pt;
     width: auto;
     height: auto;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 8px 0 rgba(0, 0, 0, 0.19);
+    
 }
 .bk-root .bk-widget-box {
     overflow: visible;
@@ -101,6 +105,9 @@ h4 {
       margin : auto auto;
       text-align: center;
       width: max-content;
+      position: relative;
+      height: 100%;
+      border-color: black;
       }
 
 .bk-root .bk-data-table {
@@ -180,3 +187,16 @@ div.chart_div table {
 .custom_slider .bk-noUi-handle {
     background:white;
     }
+.content{
+    height: 60px;
+    width: 100%;
+    background-color: whitesmoke !important;
+    color: black;
+    text-align: center;
+    display: table;
+    /* box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2), 0 4px 8px 0 rgba(0, 0, 0, 0.19); */
+
+}
+body {
+    padding-bottom: 80px;
+}

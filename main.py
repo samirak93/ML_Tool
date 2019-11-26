@@ -37,15 +37,15 @@ CODE
 
 class plot_attributes(object):
     """[summary]
-    
+
     Arguments:
         object {figure} -- Unformatted plot
-    
+
     Returns:
         [figure] -- Formatted plot
-    """    
+    """
     def plot_format(self, plot):
-        
+
         plot.background_fill_color = self.background_fill_color
         plot.border_fill_color = self.border_fill_color
         plot.xaxis.formatter = self.x_axis_format
@@ -60,9 +60,9 @@ class plot_attributes(object):
 
 
 class eda_plots(plot_attributes):
-  
+
     def __init__(self):
-               
+
         self.active_df = None
         self.source_eda = None
         self.select_hist = None
@@ -305,7 +305,7 @@ class linear_regression(plot_attributes):
         self.normalize_linreg = None
 
     def corr_plot(self, top, bottom, left, right, labels, nlabels, color_list, corr):
-               
+
         self.source_corr.data = dict(top=top, bottom=bottom, left=left, right=right, color=color_list, corr=corr)
         self.plot_corr.x_range.start, self.plot_corr.x_range.end = 0, nlabels
         self.plot_corr.y_range.start, self.plot_corr.y_range.end = 0, nlabels
@@ -498,10 +498,12 @@ class linear_regression(plot_attributes):
         self.reg_target_ms.on_change('value', self.button_enable)
         self.button_reg.on_click(self.reg_plot)
 
+        self.div_whitespace = Div(text="""""", height = 300)
+
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
                                                 self.reg_target_ms, self.button_reg),
-                                         column(self.plot_reg, row(self.plot_resid, self.plot_hist_resid)))),
+                                         column(self.plot_reg, row(self.plot_resid, self.plot_hist_resid), self.div_whitespace))),
                         title="Linear Regression")
 
         return tab_reg
@@ -510,7 +512,7 @@ class linear_regression(plot_attributes):
 class logistic_regression(plot_attributes):
     """
     Tab for Logistic Regression
-    
+
     """
     def __init__(self):
 
@@ -639,7 +641,7 @@ class logistic_regression(plot_attributes):
         df_class_report = pd.DataFrame()
         self.source_class_rep_logreg = ColumnDataSource(data=dict(df_class_report))
         class_rep_columns_logreg = [TableColumn(field=cols, title=cols) for cols in df_class_report.columns]
-        self.table_class_rep_logreg = DataTable(source=self.source_class_rep_logreg, columns=class_rep_columns_logreg, 
+        self.table_class_rep_logreg = DataTable(source=self.source_class_rep_logreg, columns=class_rep_columns_logreg,
                                                 width=600, height=200, fit_columns=True)
 
         logreg_cm_colors = list(reversed(Blues[9]))
@@ -755,9 +757,9 @@ class clustering(plot_attributes):
         source_clust_data = clustering_data(self.clust_df, active_features, active_norm, active_clust_no,
                                             self.clustering_data_source, self.mapper, self.clust_scat, self.div_loading)
         self.source_clust.data = source_clust_data
-        
+
         self.callback = CustomJS(args={}, code='alert(cb_obj.text);')
-        self.callback_holder.js_on_change('text', self.callback)        
+        self.callback_holder.js_on_change('text', self.callback)
         self.callback_holder.text = "Alert!!!"
 
     def clustering_plot(self, attr, old, new):
@@ -777,7 +779,7 @@ class clustering(plot_attributes):
             self.table_clustering.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
                                              self.clust_df.columns]
             self.clust_features_ms.options = ['ALL'] + list(clust_df.columns)
-            
+
         else:
             self.button_cluster.disabled = True
 
@@ -808,7 +810,7 @@ class clustering(plot_attributes):
                                        options=["Select dataset"] + list(self.clustering_data_source.keys()))
         self.clust_features_ms = MultiSelect(title="Select features for clustering:", value=["ALL"], options=["ALL"])
         self.clust_norm_rbg = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
-        self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1, 
+        self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1,
                                     callback_policy='mouseup', css_classes=['custom_slider'])
         self.button_cluster = Button(label="Calculate and plot clusters")
         self.button_cluster.disabled = True
@@ -829,13 +831,13 @@ class clustering(plot_attributes):
 
 
 class classification(plot_attributes):
- 
+
     def __init__(self):
         self.source_classify = None
 
     def create_figure_classify(self, attr, old, new):
         self.active_df = self.classify_data_select.value
-        
+
         if self.active_df != "Select dataset":
             self.file_path = str(self.cwd + self.data_path + str(self.classify_data_source.get(self.active_df)))
             classify_df = pd.read_csv(self.file_path)
@@ -943,7 +945,7 @@ class classification(plot_attributes):
                                          text_color='#FF0000', text_font_style='bold', text_font_size='16px')
 
         self.hover_classify_cm = HoverTool(tooltips=[("Actual", "@Actual"),
-                                                    ("Predicted", "@Prediction"), 
+                                                    ("Predicted", "@Prediction"),
                                                     ("Value", "@value")])
         self.classify_cm_plot = figure(plot_width=450, plot_height=450, title="Confusion Matrix", toolbar_location=None,
                                      tools=[self.hover_logreg_cm], x_axis_location="above")
@@ -969,14 +971,14 @@ class classification(plot_attributes):
         self.hover_classify_fi = HoverTool(tooltips=[("Feature", "@rf_features"),
                                                     ("Importance Score", "@rf_importance{0.02f}")])
         self.source_classify_fi = ColumnDataSource(data=dict(rf_features=rf_features, rf_importance=rf_importance))
-        self.classify_fi_plot = figure(y_range=rf_features,plot_width=450, plot_height=450, toolbar_location=None, 
+        self.classify_fi_plot = figure(y_range=rf_features,plot_width=450, plot_height=450, toolbar_location=None,
                                         title="Feature Importance", tools = [self.hover_classify_fi])
-        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance',left = 0, height=0.5, 
+        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance',left = 0, height=0.5,
                                    source=self.source_classify_fi, line_color='white', fill_color='dodgerblue')
         self.classify_fi_plot.background_fill_color = self.background_fill_color
         self.classify_fi_plot.border_fill_color = self.border_fill_color
         self.classify_fi_plot.xaxis.formatter = self.x_axis_format
-        
+
         self.classify_fi_plot.title.align = self.title_align
         self.classify_fi_plot.title.text_font = self.text_font
         self.classify_fi_plot.axis.axis_label_text_font = self.axis_label_text_font
@@ -997,10 +999,10 @@ class classification(plot_attributes):
         self.classify_target_ms.on_change("value", self.classify_button_enable)
         self.button_classify.on_click(self.classify_plot)
 
-        tab_classify = Panel(child = column(self.classify_data_select, self.table_classify, 
-                                            row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms, 
-                                            self.button_classify), column(self.table_class_rep_classify, 
-                                            row(self.classify_cm_plot, self.classify_fi_plot)))), 
+        tab_classify = Panel(child = column(self.classify_data_select, self.table_classify,
+                                            row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
+                                            self.button_classify), column(self.table_class_rep_classify,
+                                            row(self.classify_cm_plot, self.classify_fi_plot)))),
                             title = "Classification")
 
         return tab_classify
@@ -1016,13 +1018,13 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         logreg_data_source: Dataset for logistic regression algorithm
         classify_data_source: Dataset for multilabel classification algorithm
 
-    """ 
+    """
     def __init__(self):
         self.cwd = str(os.getcwd())
         self.data_path = "/ML/Data/"
-        self.eda_data_source = {"Credit Card (Clustering)": "CC GENERAL.csv", 
+        self.eda_data_source = {"Credit Card (Clustering)": "CC GENERAL.csv",
                                 "House Sales (Lin. Reg.)": "HOUSING PRICE.csv",
-                                "Diabetes (Log. Reg.)": "DIABETES.csv", 
+                                "Diabetes (Log. Reg.)": "DIABETES.csv",
                                 "Glass Type (Classification)": "GLASS.csv"}
         self.clustering_data_source = {"Credit Card": "CC GENERAL.csv"}
         self.regression_data_source = {"House Sales": "HOUSING PRICE.csv"}
@@ -1041,7 +1043,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
 
         # self.callback_holder = PreText(text='', css_classes=['hidden'])
         # self.callback = CustomJS(args={}, code='console.log("Alert!");')#alert(cb_obj.text)
-        # self.callback_holder.js_on_change('text', self.callback)        
+        # self.callback_holder.js_on_change('text', self.callback)
 
     def run_tool(self):
         eda_tab = self.exploration_plots()
@@ -1050,8 +1052,8 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         cluster_tab = self.cluster()
         classify_tab = self.classify()
 
-        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, classify_tab, cluster_tab], 
-                    tabs_location='above', sizing_mode='scale_both')
+        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, classify_tab, cluster_tab],
+                    tabs_location='above')
 
         return tabs
 
