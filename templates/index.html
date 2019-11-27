@@ -13,17 +13,14 @@
         {{ bokeh_css }}
         {{ bokeh_js }}
         <style>
-             {% include 'styles.css' %}
+            {% include "styles.css" %}
         </style>
     </head>
     <body class="centered">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=yes">
-
         <h1><center>Machine Learning Tool</center></h1>
         {{ plot_div|indent(8) }}
         {{ plot_script|indent(8) }}
+        <footer class="footer">Created for University of California - Irvine </footer>
     </body>
-    <!-- <footer class="footer">
-        Tool created for UC Irvine 
-    </footer> -->
 </html>

@@ -13,6 +13,7 @@ from bokeh.transform import linear_cmap, transform
 from bokeh.models.ranges import FactorRange
 from bokeh.transform import factor_cmap
 from bokeh.models.callbacks import CustomJS
+from bokeh.models.tickers import FixedTicker, SingleIntervalTicker
 
 from math import pi
 from collections import OrderedDict
@@ -87,34 +88,62 @@ class eda_plots(plot_attributes):
 
     def create_eda_figure(self):
         active_df = self.explore_data_select.value
+        select_x_axis = self.select_x_axis.value
+        select_y_axis = self.select_y_axis.value
 
         if active_df != "Select dataset":
-
+            ticker_x_dict, ticker_y_dict = {}, {}
             xs, ys = [], []
-            if self.select_x_axis.value != "None" and self.select_y_axis.value != "None":
-                if self.log_x_cb.active:
-                    if self.log_x_cb.active[0] == 0:
-                        xs = np.log(self.eda_df[self.select_x_axis.value].values + 1)
-                else:
-                    xs = self.eda_df[self.select_x_axis.value].values
+            if select_x_axis != "None" and select_y_axis != "None":
+                if str(self.eda_df[select_x_axis].dtype) == 'object':
+                    xs = pd.Categorical(self.eda_df[select_x_axis]).codes
+                    self.plot_scatter.xaxis.ticker = list(set(pd.Categorical(self.eda_df[select_x_axis]).codes))
+                    ticker_x_dict = dict(enumerate(pd.Categorical(self.eda_df[select_x_axis]).categories))
+                    self.plot_scatter.xaxis.major_label_overrides = ticker_x_dict
+                    self.plot_scatter.xaxis.major_label_orientation = pi / 4
+                elif str(self.eda_df[select_x_axis].dtype) != 'object':
+                    if self.log_x_cb.active:
+                        if self.log_x_cb.active[0] == 0:
+                            xs = np.log(self.eda_df[select_x_axis].values + 1)
+                            ticker_x_dict = {}
+                            self.plot_scatter.xaxis.ticker = []
+                            self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
+                    else:
+                        xs = self.eda_df[select_x_axis].values
+                        ticker_x_dict = {}
+                        self.plot_scatter.xaxis.ticker = []
+                        self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
+                
+                if str(self.eda_df[select_y_axis].dtype) == 'object':
+                    ys = pd.Categorical(self.eda_df[select_y_axis]).codes
+                    self.plot_scatter.yaxis.ticker = list(set(pd.Categorical(self.eda_df[select_y_axis]).codes))
+                    ticker_y_dict = dict(enumerate(pd.Categorical(self.eda_df[select_y_axis]).categories))
+                    self.plot_scatter.yaxis.major_label_overrides = ticker_y_dict
+                    self.plot_scatter.yaxis.major_label_orientation = pi / 4
 
-                if self.log_y_cb.active:
-                    if self.log_y_cb.active[0] == 0:
-                        ys = np.log(self.eda_df[self.select_y_axis.value].values + 1)
-                else:
-                    ys = self.eda_df[self.select_y_axis.value].values
+                elif str(self.eda_df[select_y_axis].dtype) != 'object':
+                    if self.log_y_cb.active:
+                        if self.log_y_cb.active[0] == 0:
+                            ys = np.log(self.eda_df[select_y_axis].values + 1)
+                            self.plot_scatter.yaxis.ticker = [] 
+                            self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
+                    else:
+                        ys = self.eda_df[select_y_axis].values
+                        self.plot_scatter.yaxis.ticker = []
+                        self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
 
-            self.plot_scatter.xaxis.axis_label = self.select_x_axis.value
-            self.plot_scatter.yaxis.axis_label = self.select_y_axis.value
+            self.plot_scatter.xaxis.axis_label = select_x_axis
+            self.plot_scatter.yaxis.axis_label = select_y_axis
 
             color_dict = {}
+            select_color = self.select_color.value
 
-            if self.select_color.value != "None":
-                color_factors = self.eda_df[self.select_color.value].unique().tolist()
+            if select_color != "None":
+                color_factors = self.eda_df[select_color].unique().tolist()
                 for i in range(0, len(color_factors)):
                     color_dict[str(color_factors[i])] = Category20[20][i]
 
-                scat_color = pd.Series(self.eda_df[self.select_color.value].astype(str)).map(color_dict)
+                scat_color = pd.Series(self.eda_df[select_color].astype(str)).map(color_dict)
                 self.source_scatter.data = dict(x=xs, y=ys, color=scat_color)
             else:
                 scat_color = ['dodgerblue'] * len(xs)
@@ -217,8 +246,8 @@ class eda_plots(plot_attributes):
         self.plot_scatter.scatter(x='x', y='y', size=10, line_color="white", alpha=0.6,
                                   hover_color='white', hover_alpha=0.5, source=self.source_scatter, fill_color='color')
         self.plot_scatter = self.plot_format(self.plot_scatter)
-        self.plot_scatter.min_border_left = 50
-        self.plot_scatter.min_border_bottom = 50
+        self.plot_scatter.min_border_left = 75
+        self.plot_scatter.min_border_bottom = 75
 
         hist, edges = [], []
 
@@ -254,18 +283,23 @@ class eda_plots(plot_attributes):
         self.button_hist_plot = Button(label="Draw Histogram")
         self.button_hist_plot.disabled = True
 
+        self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
+        self.callback = CustomJS(args={}, code='confirm(cb_obj.text);')
+        # self.callback_holder.text = "Alert!!!"
+
         self.select_x_axis.on_change('value', self.eda_button_enable)
         self.select_y_axis.on_change('value', self.eda_button_enable)
         self.select_hist.on_change('value', self.eda_button_enable)
         self.explore_data_select.on_change("value", self.eda_table)
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
+        self.callback_holder.js_on_change('text', self.callback)
 
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
                                      row(column(self.select_hist, self.log_hist_cb, self.slider_bins,
-                                                self.button_hist_plot), self.plot_hist)),
+                                                self.button_hist_plot), self.plot_hist, self.callback_holder)),
                         title="Exploration")
         return tab_eda
 
@@ -414,7 +448,7 @@ class linear_regression(plot_attributes):
                                 toolbar_location='left', tools=[self.hover_corr])
 
         self.plot_corr.quad(top='top', bottom='bottom', left='left',
-                            right='right', color='color', line_color='black', source=self.source_corr)
+                            right='right', color='color', line_color='white', source=self.source_corr)
         self.plot_corr = self.plot_format(self.plot_corr)
         self.plot_corr.xgrid.grid_line_color = None
         self.plot_corr.ygrid.grid_line_color = None
@@ -478,7 +512,7 @@ class linear_regression(plot_attributes):
                                       y_range=self.plot_resid.y_range, min_border=10, y_axis_location="right",
                                       tools=[self.hover_resid_hist] + ['pan'])
         self.plot_hist_resid.quad(left=0, bottom='bottom', top='top', right='right', color="dodgerblue",
-                                  line_color="#3A5785", source=self.source_hist_resid)
+                                  line_color="white", source=self.source_hist_resid)
 
         self.plot_hist_resid.ygrid.grid_line_color = None
         self.plot_hist_resid.xaxis.major_label_orientation = np.pi / 4
@@ -1025,11 +1059,13 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.eda_data_source = {"Credit Card (Clustering)": "CC GENERAL.csv",
                                 "House Sales (Lin. Reg.)": "HOUSING PRICE.csv",
                                 "Diabetes (Log. Reg.)": "DIABETES.csv",
-                                "Glass Type (Classification)": "GLASS.csv"}
+                                "Glass Type (Classification)": "GLASS.csv",
+                                "Census Income (Classification)":"CENSUS_INCOME.csv"}
         self.clustering_data_source = {"Credit Card": "CC GENERAL.csv"}
         self.regression_data_source = {"House Sales": "HOUSING PRICE.csv"}
         self.logreg_data_source = {"Diabetes": "DIABETES.csv"}
-        self.classify_data_source = {"Glass Type": "GLASS.csv", "Mobile Prices": "MOBILE.csv"}
+        self.classify_data_source = {"Glass Type": "GLASS.csv", "Mobile Prices": "MOBILE.csv",
+                                     "Census Income": "CENSUS_INCOME.csv"}
 
         self.background_fill_color = 'whitesmoke'
         self.border_fill_color = 'whitesmoke'
@@ -1040,10 +1076,6 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.text_font = 'times'
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
-
-        # self.callback_holder = PreText(text='', css_classes=['hidden'])
-        # self.callback = CustomJS(args={}, code='console.log("Alert!");')#alert(cb_obj.text)
-        # self.callback_holder.js_on_change('text', self.callback)
 
     def run_tool(self):
         eda_tab = self.exploration_plots()
