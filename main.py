@@ -105,13 +105,11 @@ class eda_plots(plot_attributes):
                     if self.log_x_cb.active:
                         if self.log_x_cb.active[0] == 0:
                             xs = np.log(self.eda_df[select_x_axis].values + 1)
-                            ticker_x_dict = {}
-                            self.plot_scatter.xaxis.ticker = []
+                            self.plot_scatter.xaxis.major_label_overrides = {'0':"0"}
                             self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
                     else:
                         xs = self.eda_df[select_x_axis].values
-                        ticker_x_dict = {}
-                        self.plot_scatter.xaxis.ticker = []
+                        self.plot_scatter.xaxis.major_label_overrides = {'0':"0"}
                         self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
                 
                 if str(self.eda_df[select_y_axis].dtype) == 'object':
@@ -125,11 +123,11 @@ class eda_plots(plot_attributes):
                     if self.log_y_cb.active:
                         if self.log_y_cb.active[0] == 0:
                             ys = np.log(self.eda_df[select_y_axis].values + 1)
-                            self.plot_scatter.yaxis.ticker = [] 
+                            self.plot_scatter.yaxis.major_label_overrides = {'0':"0"}
                             self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
                     else:
                         ys = self.eda_df[select_y_axis].values
-                        self.plot_scatter.yaxis.ticker = []
+                        self.plot_scatter.yaxis.major_label_overrides = {'0':"0"}
                         self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
 
             self.plot_scatter.xaxis.axis_label = select_x_axis
@@ -168,6 +166,17 @@ class eda_plots(plot_attributes):
                 hist, edges = np.histogram(log_hist, bins=self.slider_bins.value)
 
             self.source_histogram.data = dict(top=hist, left=edges[:-1], right=edges[1:])
+            self.callback = CustomJS(args={}, 
+             code= """var x = document.getElementById("toast")
+                console.log(cb_obj.text)
+                x.className = "show";
+                document.getElementById("desc").innerHTML = cb_obj.text;
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 4000);""")
+                 
+                 #confirm(cb_obj.text);
+            self.callback_holder.js_on_change('text', self.callback)
+       
+            self.callback_holder.text = str(np.random.random_sample())
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
@@ -284,8 +293,7 @@ class eda_plots(plot_attributes):
         self.button_hist_plot.disabled = True
 
         self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
-        self.callback = CustomJS(args={}, code='confirm(cb_obj.text);')
-        # self.callback_holder.text = "Alert!!!"
+        
 
         self.select_x_axis.on_change('value', self.eda_button_enable)
         self.select_y_axis.on_change('value', self.eda_button_enable)
@@ -293,7 +301,7 @@ class eda_plots(plot_attributes):
         self.explore_data_select.on_change("value", self.eda_table)
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
-        self.callback_holder.js_on_change('text', self.callback)
+        # self.callback_holder.js_on_change('text', self.callback)
 
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
@@ -792,10 +800,6 @@ class clustering(plot_attributes):
                                             self.clustering_data_source, self.mapper, self.clust_scat, self.div_loading)
         self.source_clust.data = source_clust_data
 
-        self.callback = CustomJS(args={}, code='alert(cb_obj.text);')
-        self.callback_holder.js_on_change('text', self.callback)
-        self.callback_holder.text = "Alert!!!"
-
     def clustering_plot(self, attr, old, new):
         self.active_df = str(self.clus_data_select.value)
 
@@ -854,12 +858,12 @@ class clustering(plot_attributes):
 
         self.div_loading = Div(text="""""")
 
-        self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
+        # self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
 
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
                                                     self.button_cluster, self.div_loading),
-                                             column(self.clust_scat)), self.callback_holder), title="Clustering")
+                                             column(self.clust_scat))), title="Clustering")
 
         return tab_cluster
 
@@ -1076,6 +1080,10 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.text_font = 'times'
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
+        # self.callback = CustomJS(args={}, 
+        #      code= """var x = document.getElementById("toast")
+        #          x.className = "show";
+        #          setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
 
     def run_tool(self):
         eda_tab = self.exploration_plots()
