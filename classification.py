@@ -8,6 +8,18 @@ import numpy as np
 
 def get_classify_output(features_df, target_df, active_norm):
 
+    non_num_features = [col for col, dt in features_df.dtypes.items() if dt == object]
+    likely_cat = {}
+    for var in features_df.columns:
+                likely_cat[var] = features_df[var].nunique() <= 100
+    likely_cat = [k for k, v in likely_cat.items() if v is True]
+    non_num_features = list(set(non_num_features + likely_cat))
+
+    if list(non_num_features):
+        lb_results_df = pd.DataFrame(pd.get_dummies(features_df[non_num_features]))
+        features_df = features_df.drop(columns=non_num_features)
+        features_df = pd.concat([features_df, lb_results_df], axis=1)
+
     X_train, X_test, y_train, y_test = train_test_split(features_df, target_df, test_size=0.3, random_state=40)
 
     if active_norm == 1:
@@ -33,13 +45,13 @@ def get_classify_output(features_df, target_df, active_norm):
 
     confusion_df = pd.DataFrame(
         confusion_matrix,
-        columns=sorted(target_df.unique()),
-        index=sorted(target_df.unique()))
+        columns=sorted(list(set(y_test))),
+        index=sorted(list(set(y_test))))
     confusion_df.index.name = 'Actual'
     confusion_df.columns.name = 'Prediction'
 
     confusion_df = confusion_df.stack().rename("value").reset_index()
-
+    
     rf_feature_labels = features_df.columns.values.tolist()
     rf_feature_importance = random_forest.feature_importances_.tolist()
 

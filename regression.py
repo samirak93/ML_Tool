@@ -50,9 +50,7 @@ def get_regression_plot(features_df, target_df, active_norm):
     non_num_features = list(set(non_num_features + likely_cat))
 
     if list(non_num_features):
-    
         lb_results_df = pd.DataFrame(pd.get_dummies(features_df[non_num_features]))
-
         features_df = features_df.drop(columns=non_num_features)
         features_df = pd.concat([features_df, lb_results_df], axis=1)
 

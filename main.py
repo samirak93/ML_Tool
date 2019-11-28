@@ -6,7 +6,7 @@ from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
     LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
-    CheckboxGroup, PreText
+    CheckboxGroup, PreText, Paragraph
 from bokeh.layouts import column, row, widgetbox
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
@@ -166,17 +166,6 @@ class eda_plots(plot_attributes):
                 hist, edges = np.histogram(log_hist, bins=self.slider_bins.value)
 
             self.source_histogram.data = dict(top=hist, left=edges[:-1], right=edges[1:])
-            self.callback = CustomJS(args={}, 
-             code= """var x = document.getElementById("toast")
-                console.log(cb_obj.text)
-                x.className = "show";
-                document.getElementById("desc").innerHTML = cb_obj.text;
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 4000);""")
-                 
-                 #confirm(cb_obj.text);
-            self.callback_holder.js_on_change('text', self.callback)
-       
-            self.callback_holder.text = str(np.random.random_sample())
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
@@ -292,22 +281,18 @@ class eda_plots(plot_attributes):
         self.button_hist_plot = Button(label="Draw Histogram")
         self.button_hist_plot.disabled = True
 
-        self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
-        
-
         self.select_x_axis.on_change('value', self.eda_button_enable)
         self.select_y_axis.on_change('value', self.eda_button_enable)
         self.select_hist.on_change('value', self.eda_button_enable)
         self.explore_data_select.on_change("value", self.eda_table)
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
-        # self.callback_holder.js_on_change('text', self.callback)
 
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
                                      row(column(self.select_hist, self.log_hist_cb, self.slider_bins,
-                                                self.button_hist_plot), self.plot_hist, self.callback_holder)),
+                                                self.button_hist_plot), self.plot_hist)),
                         title="Exploration")
         return tab_eda
 
@@ -369,7 +354,6 @@ class linear_regression(plot_attributes):
         active_norm = self.normalize_linreg.active
 
         if label != "SELECT TARGET":
-
             if 'ALL' in features:
                 df_columns = self.reg_df.columns.values.tolist()
                 df_columns.remove(label)
@@ -384,7 +368,7 @@ class linear_regression(plot_attributes):
                     features_df = self.reg_df.loc[:, features]
 
             target_df = self.reg_df.loc[:, label]
-
+            
             actual_reg, predict_reg, text, MAE, RMSE, residual, \
             slope, intercept = get_regression_plot(features_df, target_df, active_norm)
 
@@ -408,6 +392,8 @@ class linear_regression(plot_attributes):
 
             self.hline.line_alpha = 0.5
             self.source_hist_resid.data = dict(top=vedges[1:], bottom=vedges[:-1], right=vhist)
+            self.error_count+=1
+            self.alert_reg.text =  str(self.error_count)+" Regression Completed"
 
     def create_figure_reg(self, attr, old, new):
         self.active_df = self.reg_data_select.value
@@ -430,7 +416,20 @@ class linear_regression(plot_attributes):
             likely_target = [k for k, v in likely_target.items() if v is True]
             self.reg_target_ms.options = ['SELECT TARGET'] + list(likely_target)
 
-            top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(reg_df)
+            top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(self.reg_df)
+            self.corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr)
+
+            self.button_reg.disabled = True
+        else:
+            self.source_reg.data = {}
+            self.table_reg.columns = []
+            self.reg_features_ms.options = ["ALL"]
+            self.reg_features_ms.value = ["ALL"]
+            self.reg_target_ms.options = ['SELECT TARGET']
+            self.reg_target_ms.value = 'SELECT TARGET'
+            self.button_logreg.disabled = True
+
+            top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(pd.DataFrame())
             self.corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr)
 
     def button_enable(self, attr, old, new):
@@ -542,10 +541,21 @@ class linear_regression(plot_attributes):
 
         self.div_whitespace = Div(text="""""", height = 100)
 
+        self.alert_reg = Div(text='', css_classes=['hidden'], visible=False)
+        self.callback_reg = CustomJS(args={}, 
+             code= """var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+                 
+        self.alert_reg.js_on_change('text', self.callback_reg)
+
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
                                                 self.reg_target_ms, self.button_reg),
-                                         column(self.plot_reg, row(self.plot_resid, self.plot_hist_resid), self.div_whitespace))),
+                                         column(self.plot_reg, row(self.plot_resid, self.plot_hist_resid), 
+                                         self.alert_reg, self.div_whitespace))),
                         title="Linear Regression")
 
         return tab_reg
@@ -613,6 +623,7 @@ class logistic_regression(plot_attributes):
             likely_cat = [k for k, v in likely_cat.items() if v is True]
 
             self.logreg_target_ms.options = ['SELECT TARGET'] + likely_cat
+            self.button_logreg.disabled = True
         else:
             self.source_logreg.data = {}
             self.table_logreg.columns = []
@@ -671,6 +682,9 @@ class logistic_regression(plot_attributes):
         self.legend_roc.items = [LegendItem(label="Logistic Regression (area = " + str(logit_roc_auc) + ")",
                                             renderers=[self.roc_line])]
         self.source_logreg_const_roc.data = dict(const_roc_x=[0, 1], const_roc_y=[0, 1])
+
+        self.error_count+=1
+        self.alert_logreg.text =  str(self.error_count)+" Logistic Regression Completed"
 
     def logreg(self):
 
@@ -759,14 +773,237 @@ class logistic_regression(plot_attributes):
 
         self.div_report_title = Div(text="""<center>Classification Report</center>""", width = 600)
 
+        self.alert_logreg = Div(text='', css_classes=['hidden'], visible=False)
+        self.callback_logreg = CustomJS(args={}, 
+             code= """var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+                 
+        self.alert_logreg.js_on_change('text', self.callback_logreg)
+
         tab_logreg = Panel(child=column(self.logreg_data_select, self.table_logreg,
                                         row(column(self.logreg_features_ms, self.normalize_logreg,
                                                    self.logreg_target_ms, self.button_logreg),
                                             column(self.div_report_title, self.table_class_rep_logreg, self.logreg_cm_plot,
-                                                   self.logreg_roc_plot))),
+                                                   self.logreg_roc_plot, self.alert_logreg))),
                            title="Logistic Regression")
 
         return tab_logreg
+
+
+class classification(plot_attributes):
+
+    def __init__(self):
+        self.source_classify = None
+
+    def create_figure_classify(self, attr, old, new):
+        self.active_df = self.classify_data_select.value
+
+        if self.active_df != "Select dataset":
+            self.file_path = str(self.cwd + self.data_path + str(self.classify_data_source.get(self.active_df)))
+            classify_df = pd.read_csv(self.file_path)
+            classify_df = classify_df.fillna(classify_df.mean())
+            classify_df.columns = [x.upper() for x in classify_df.columns]
+            self.classify_df = classify_df
+
+            self.source_classify.data = dict(classify_df)
+            self.table_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
+                                         self.classify_df.columns]
+
+            self.classify_features_ms.options = ["ALL"] + classify_df.columns.values.tolist()
+
+            likely_cat = {}
+            for var in classify_df.columns:
+                likely_cat[var] = classify_df[var].nunique() <= 20
+            likely_cat = [k for k, v in likely_cat.items() if v is True]
+
+            self.classify_target_ms.options = ['SELECT TARGET'] + likely_cat
+
+            self.button_classify.disabled = True
+            
+        else:
+            self.source_classify.data = {}
+            self.table_classify.columns = []
+            self.classify_features_ms.options = ["ALL"]
+            self.classify_features_ms.value = ["ALL"]
+            self.classify_target_ms.options = ['SELECT TARGET']
+            self.classify_target_ms.value = 'SELECT TARGET'
+            self.button_classify.disabled = True
+            self.source_classify_cm.data = {}
+            self.source_classify_fi.data = {}
+            self.source_class_rep_classify.data = {}
+
+    def classify_button_enable(self, attr, old, new):
+        if self.classify_target_ms.value!= "SELECT TARGET":
+            self.button_classify.disabled = False
+        else:
+            self.button_classify.disabled = True
+
+    def classify_plot(self):
+        features = self.classify_features_ms.value
+        label = self.classify_target_ms.value
+        classify_df = self.classify_df
+        active_norm = self.normalize_classify.active
+
+        if label != "SELECT TARGET":
+            if 'ALL' in features:
+                df_columns = classify_df.columns.values.tolist()
+                df_columns.remove(label)
+                features_df = classify_df.loc[:, df_columns]
+            else:
+                if label in features:
+                    features.remove(label)
+                    features_df = classify_df.loc[:, features]
+                else:
+                    features_df = classify_df.loc[:, features]
+
+            target_df = classify_df.loc[:, label]
+
+        accuracy_score, class_report_df, confusion_df, \
+            rf_feature_labels, rf_feature_importance = get_classify_output(features_df, target_df, active_norm)
+
+        self.source_class_rep_classify.data = dict(class_report_df)
+        self.table_class_rep_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
+                                        class_report_df.columns]
+        self.table_class_rep_classify.index_position = None
+
+        self.classify_cm_mapper.low, self.classify_cm_mapper.high = confusion_df.value.values.min(), \
+                                                                    confusion_df.value.values.max()
+        self.color_bar_classify_cm.scale_alpha = 1
+        self.color_bar_classify_cm.major_label_text_alpha = 1
+        
+        if str(confusion_df['Actual'].dtype) == 'object' or str(confusion_df['Prediction'].dtype) == 'object':
+
+            self.classify_cm_plot.xaxis.ticker = list(set(pd.Categorical(confusion_df['Actual']).codes))
+            ticker_x_dict = dict(enumerate(pd.Categorical(confusion_df['Actual']).categories))
+            confusion_df['Actual'] = pd.Categorical(confusion_df['Actual']).codes
+            self.classify_cm_plot.xaxis.major_label_overrides = ticker_x_dict
+            self.classify_cm_plot.xaxis.major_label_orientation = pi / 4
+            
+            self.classify_cm_plot.yaxis.ticker = list(set(pd.Categorical(confusion_df['Prediction']).codes))
+            ticker_y_dict = dict(enumerate(pd.Categorical(confusion_df['Prediction']).categories))
+            confusion_df['Prediction'] = pd.Categorical(confusion_df['Prediction']).codes
+            self.classify_cm_plot.yaxis.major_label_overrides = ticker_y_dict
+
+        else:
+            self.classify_cm_plot.x_range.start, self.classify_cm_plot.x_range.end = confusion_df.Actual.min(), \
+                                                                                confusion_df.Actual.max()
+            self.classify_cm_plot.y_range.start, self.classify_cm_plot.y_range.end = confusion_df.Prediction.min(), \
+                                                                                confusion_df.Prediction.max()
+            self.classify_cm_plot.xaxis.ticker = sorted(target_df.unique())
+            self.classify_cm_plot.yaxis.ticker = sorted(target_df.unique())
+
+        self.classify_cm_plot.xaxis.axis_label = "Actual"
+        self.classify_cm_plot.yaxis.axis_label = "Predicted"
+
+        self.source_classify_cm.data = confusion_df
+        rf_df = pd.DataFrame(dict({'rf_features':rf_feature_labels,'rf_importance':rf_feature_importance})).nlargest(15, "rf_importance" )
+        self.source_classify_fi.data = dict(rf_df)
+        self.classify_fi_plot.y_range.factors =  rf_df['rf_features'].values.tolist()
+        
+        self.error_count+=1
+        self.alert_classify.text =  str(self.error_count)+" Classification completed"
+
+    def classify(self):
+        df_classify = pd.DataFrame()
+        self.source_classify = ColumnDataSource(data=dict(df_classify))
+        classify_columns = [TableColumn(field=cols, title=cols) for cols in df_classify.columns]
+        self.table_classify = DataTable(source=self.source_classify, columns=classify_columns, width=1200, height=300,
+                                          fit_columns=True)
+
+        df_class_report = pd.DataFrame()
+        self.source_class_rep_classify = ColumnDataSource(data=dict(df_class_report))
+        class_rep_columns_classify = [TableColumn(field=cols, title=cols) for cols in df_class_report.columns]
+        self.table_class_rep_classify = DataTable(source=self.source_class_rep_classify, columns=class_rep_columns_classify, width=600, height=200,
+                                         fit_columns=True)
+
+        classify_cm_colors = list(reversed(Blues[9]))
+        actual_cm, predicted_cm, value_cm = [], [], []
+        self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
+
+        self.classify_cm_mapper = LinearColorMapper(palette=classify_cm_colors, low=0, high=100)
+        self.labels_classify_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
+                                         y_offset=-10,
+                                         source=self.source_classify_cm, render_mode='canvas', text_align='center',
+                                         text_font='times',
+                                         text_color='#FF0000', text_font_style='bold', text_font_size='16px')
+
+        self.hover_classify_cm = HoverTool(tooltips=[("Actual", "@Actual"),
+                                                    ("Predicted", "@Prediction"),
+                                                    ("Value", "@value")])
+        self.classify_cm_plot = figure(plot_width=600, plot_height=550, title="Confusion Matrix", toolbar_location=None,
+                                     tools=[self.hover_logreg_cm], x_axis_location="above")
+        self.classify_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_classify_cm,
+                                 line_color='black', fill_color=transform('value', self.classify_cm_mapper))
+        self.classify_cm_plot.y_range.flipped = True
+
+        self.color_bar_classify_cm = ColorBar(color_mapper=self.classify_cm_mapper, location=(0, 0),
+                                            ticker=BasicTicker(desired_num_ticks=len(classify_cm_colors)),
+                                            scale_alpha=0, major_label_text_alpha=0)
+
+        self.classify_cm_plot.add_layout(self.color_bar_classify_cm, 'right')
+        self.color_bar_classify_cm.background_fill_color = "whitesmoke"
+        self.classify_cm_plot = self.plot_format(self.classify_cm_plot)
+        self.classify_cm_plot.add_layout(self.labels_classify_cm)
+        self.classify_cm_plot.min_border_left = 100
+        self.classify_cm_plot.min_border_top = 100
+        self.classify_cm_plot.min_border_bottom = 50
+
+        rf_features = []
+        rf_importance = []
+
+        self.hover_classify_fi = HoverTool(tooltips=[("Feature", "@rf_features"),
+                                                    ("Importance Score", "@rf_importance{0.02f}")])
+        self.source_classify_fi = ColumnDataSource(data=dict(rf_features=rf_features, rf_importance=rf_importance))
+        self.classify_fi_plot = figure(y_range=rf_features,plot_width=600, plot_height=500, toolbar_location=None,
+                                        title="Feature Importance", tools = [self.hover_classify_fi])
+        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance',left = 0, height=0.5,
+                                   source=self.source_classify_fi, line_color='white', fill_color='dodgerblue')
+        self.classify_fi_plot.background_fill_color = self.background_fill_color
+        self.classify_fi_plot.border_fill_color = self.border_fill_color
+        self.classify_fi_plot.xaxis.formatter = self.x_axis_format
+        self.classify_fi_plot.title.align = self.title_align
+        self.classify_fi_plot.title.text_font = self.text_font
+        self.classify_fi_plot.axis.axis_label_text_font = self.axis_label_text_font
+        self.classify_fi_plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
+        self.classify_fi_plot.title.text_font_size = self.text_font_size
+        self.classify_fi_plot.min_border_top = 100
+        # self.classify_fi_plot.min_border_l = 40
+
+
+        self.classify_data_select = Select(title="Dataset:", value="Select dataset",
+                                       options=["Select dataset"] + list(self.classify_data_source.keys()))
+        self.classify_features_ms = MultiSelect(title="Select features:", value=["ALL"], options=["ALL"])
+        self.normalize_classify = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
+
+        self.classify_target_ms = Select(title="Select target for Classification:", value="SELECT TARGET",
+                                       options=["SELECT TARGET"])
+        self.button_classify = Button(label="Perform classification")
+        self.button_classify.disabled = True
+
+        self.classify_data_select.on_change('value', self.create_figure_classify)
+        self.classify_target_ms.on_change("value", self.classify_button_enable)
+        self.button_classify.on_click(self.classify_plot)
+
+        self.alert_classify = Div(text='', css_classes=['hidden'], visible=False)
+        self.callback_classify = CustomJS(args={}, 
+             code= """var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+                 
+        self.alert_classify.js_on_change('text', self.callback_classify)
+
+        tab_classify = Panel(child = column(self.classify_data_select, self.table_classify,
+                                            row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
+                                            self.button_classify), column(self.table_class_rep_classify,
+                                            column(self.classify_cm_plot, self.classify_fi_plot, self.alert_classify)))),
+                            title = "Classification")
+
+        return tab_classify
 
 
 class clustering(plot_attributes):
@@ -788,7 +1025,6 @@ class clustering(plot_attributes):
         self.clust_norm_rbg = None
         self.hover_clust = None
         self.table_clustering = None
-        self.div_loading = None
 
     def cluster_plot(self):
 
@@ -797,8 +1033,10 @@ class clustering(plot_attributes):
         active_clust_no = self.clust_slider.value
 
         source_clust_data = clustering_data(self.clust_df, active_features, active_norm, active_clust_no,
-                                            self.clustering_data_source, self.mapper, self.clust_scat, self.div_loading)
+                                            self.clustering_data_source, self.mapper, self.clust_scat)
         self.source_clust.data = source_clust_data
+        self.error_count+=1
+        self.alert_cluster.text =  str(self.error_count)+" Clustering Completed"
 
     def clustering_plot(self, attr, old, new):
         self.active_df = str(self.clus_data_select.value)
@@ -856,194 +1094,22 @@ class clustering(plot_attributes):
         self.clus_data_select.on_change("value", self.clustering_plot)
         self.button_cluster.on_click(self.cluster_plot)
 
-        self.div_loading = Div(text="""""")
-
-        # self.callback_holder = PreText(text='', css_classes=['hidden'], visible=False)
+        self.alert_cluster = Div(text='', css_classes=['hidden'], visible=False)
+        self.callback_cluster = CustomJS(args={}, 
+             code= """var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+                 
+        self.alert_cluster.js_on_change('text', self.callback_cluster)
 
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
-                                                    self.button_cluster, self.div_loading),
-                                             column(self.clust_scat))), title="Clustering")
+                                                    self.button_cluster),
+                                             column(self.clust_scat), self.alert_cluster)), title="Clustering")
 
         return tab_cluster
-
-
-class classification(plot_attributes):
-
-    def __init__(self):
-        self.source_classify = None
-
-    def create_figure_classify(self, attr, old, new):
-        self.active_df = self.classify_data_select.value
-
-        if self.active_df != "Select dataset":
-            self.file_path = str(self.cwd + self.data_path + str(self.classify_data_source.get(self.active_df)))
-            classify_df = pd.read_csv(self.file_path)
-            classify_df = classify_df.fillna(classify_df.mean())
-            classify_df.columns = [x.upper() for x in classify_df.columns]
-            self.classify_df = classify_df
-
-            self.source_classify.data = dict(classify_df)
-            self.table_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
-                                         self.classify_df.columns]
-
-            self.classify_features_ms.options = ["ALL"] + classify_df.columns.values.tolist()
-
-            likely_cat = {}
-            for var in classify_df.columns:
-                likely_cat[var] = classify_df[var].nunique() <= 20
-            likely_cat = [k for k, v in likely_cat.items() if v is True]
-
-            self.classify_target_ms.options = ['SELECT TARGET'] + likely_cat
-        else:
-            self.source_classify.data = {}
-            self.table_classify.columns = []
-            self.classify_features_ms.options = ["ALL"]
-            self.classify_features_ms.value = ["ALL"]
-            self.classify_target_ms.options = ['SELECT TARGET']
-            self.classify_target_ms.value = 'SELECT TARGET'
-            self.button_classify.disabled = True
-
-    def classify_button_enable(self, attr, old, new):
-        if self.classify_target_ms.value!= "SELECT TARGET":
-            self.button_classify.disabled = False
-        else:
-            self.button_classify.disabled = True
-
-    def classify_plot(self):
-        features = self.classify_features_ms.value
-        label = self.classify_target_ms.value
-        classify_df = self.classify_df
-        active_norm = self.normalize_classify.active
-
-        if label != "SELECT TARGET":
-            if 'ALL' in features:
-                df_columns = classify_df.columns.values.tolist()
-                df_columns.remove(label)
-                features_df = classify_df.loc[:, df_columns]
-            else:
-                if label in features:
-                    features.remove(label)
-                    features_df = classify_df.loc[:, features]
-                else:
-                    features_df = classify_df.loc[:, features]
-
-            target_df = classify_df.loc[:, label]
-
-        accuracy_score, class_report_df, confusion_df, \
-            rf_feature_labels, rf_feature_importance = get_classify_output(features_df, target_df, active_norm)
-
-        self.source_class_rep_classify.data = dict(class_report_df)
-        self.table_class_rep_classify.columns = [TableColumn(field=cols, title=cols, width=90) for cols in
-                                        class_report_df.columns]
-        self.table_class_rep_classify.index_position = None
-
-        self.classify_cm_mapper.low, self.classify_cm_mapper.high = confusion_df.value.values.min(), \
-                                                                    confusion_df.value.values.max()
-        self.color_bar_classify_cm.scale_alpha = 1
-        self.color_bar_classify_cm.major_label_text_alpha = 1
-
-        self.classify_cm_plot.x_range.start, self.classify_cm_plot.x_range.end = confusion_df.Actual.min(), \
-                                                                             confusion_df.Actual.max()
-        self.classify_cm_plot.y_range.start, self.classify_cm_plot.y_range.end = confusion_df.Prediction.min(), \
-                                                                             confusion_df.Prediction.max()
-
-        self.classify_cm_plot.xaxis.ticker = sorted(target_df.unique())
-        self.classify_cm_plot.yaxis.ticker = sorted(target_df.unique())
-        self.classify_cm_plot.xaxis.axis_label = "Actual"
-        self.classify_cm_plot.yaxis.axis_label = "Predicted"
-
-        self.source_classify_cm.data = confusion_df
-
-        self.source_classify_fi.data = dict(rf_features = rf_feature_labels, rf_importance=rf_feature_importance)
-        self.classify_fi_plot.y_range.factors =  rf_feature_labels
-
-    def classify(self):
-        df_classify = pd.DataFrame()
-        self.source_classify = ColumnDataSource(data=dict(df_classify))
-        classify_columns = [TableColumn(field=cols, title=cols) for cols in df_classify.columns]
-        self.table_classify = DataTable(source=self.source_classify, columns=classify_columns, width=1200, height=300,
-                                          fit_columns=True)
-
-        df_class_report = pd.DataFrame()
-        self.source_class_rep_classify = ColumnDataSource(data=dict(df_class_report))
-        class_rep_columns_classify = [TableColumn(field=cols, title=cols) for cols in df_class_report.columns]
-        self.table_class_rep_classify = DataTable(source=self.source_class_rep_classify, columns=class_rep_columns_classify, width=600, height=200,
-                                         fit_columns=True)
-
-        classify_cm_colors = list(reversed(Blues[9]))
-        actual_cm, predicted_cm, value_cm = [], [], []
-        self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
-
-        self.classify_cm_mapper = LinearColorMapper(palette=classify_cm_colors, low=0, high=100)
-        self.labels_classify_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
-                                         y_offset=-10,
-                                         source=self.source_classify_cm, render_mode='canvas', text_align='center',
-                                         text_font='times',
-                                         text_color='#FF0000', text_font_style='bold', text_font_size='16px')
-
-        self.hover_classify_cm = HoverTool(tooltips=[("Actual", "@Actual"),
-                                                    ("Predicted", "@Prediction"),
-                                                    ("Value", "@value")])
-        self.classify_cm_plot = figure(plot_width=450, plot_height=450, title="Confusion Matrix", toolbar_location=None,
-                                     tools=[self.hover_logreg_cm], x_axis_location="above")
-        self.classify_cm_plot.rect(x="Actual", y="Prediction", width=.9, height=.9, source=self.source_classify_cm,
-                                 line_color='black', fill_color=transform('value', self.classify_cm_mapper))
-        self.classify_cm_plot.y_range.flipped = True
-
-        self.color_bar_classify_cm = ColorBar(color_mapper=self.classify_cm_mapper, location=(0, 0),
-                                            ticker=BasicTicker(desired_num_ticks=len(classify_cm_colors)),
-                                            scale_alpha=0, major_label_text_alpha=0)
-
-        self.classify_cm_plot.add_layout(self.color_bar_classify_cm, 'right')
-        self.color_bar_classify_cm.background_fill_color = "whitesmoke"
-        self.classify_cm_plot = self.plot_format(self.classify_cm_plot)
-        self.classify_cm_plot.add_layout(self.labels_classify_cm)
-        self.classify_cm_plot.min_border_left = 50
-        self.classify_cm_plot.min_border_top = 50
-        self.classify_cm_plot.min_border_right = 50
-
-        rf_features = []
-        rf_importance = []
-
-        self.hover_classify_fi = HoverTool(tooltips=[("Feature", "@rf_features"),
-                                                    ("Importance Score", "@rf_importance{0.02f}")])
-        self.source_classify_fi = ColumnDataSource(data=dict(rf_features=rf_features, rf_importance=rf_importance))
-        self.classify_fi_plot = figure(y_range=rf_features,plot_width=450, plot_height=450, toolbar_location=None,
-                                        title="Feature Importance", tools = [self.hover_classify_fi])
-        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance',left = 0, height=0.5,
-                                   source=self.source_classify_fi, line_color='white', fill_color='dodgerblue')
-        self.classify_fi_plot.background_fill_color = self.background_fill_color
-        self.classify_fi_plot.border_fill_color = self.border_fill_color
-        self.classify_fi_plot.xaxis.formatter = self.x_axis_format
-
-        self.classify_fi_plot.title.align = self.title_align
-        self.classify_fi_plot.title.text_font = self.text_font
-        self.classify_fi_plot.axis.axis_label_text_font = self.axis_label_text_font
-        self.classify_fi_plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
-        self.classify_fi_plot.title.text_font_size = self.text_font_size
-
-        self.classify_data_select = Select(title="Dataset:", value="Select dataset",
-                                       options=["Select dataset"] + list(self.classify_data_source.keys()))
-        self.classify_features_ms = MultiSelect(title="Select features:", value=["ALL"], options=["ALL"])
-        self.normalize_classify = RadioButtonGroup(labels=["Actual Data", "Normalize Data"], active=0)
-
-        self.classify_target_ms = Select(title="Select target for Classification:", value="SELECT TARGET",
-                                       options=["SELECT TARGET"])
-        self.button_classify = Button(label="Perform classification")
-        self.button_classify.disabled = True
-
-        self.classify_data_select.on_change('value', self.create_figure_classify)
-        self.classify_target_ms.on_change("value", self.classify_button_enable)
-        self.button_classify.on_click(self.classify_plot)
-
-        tab_classify = Panel(child = column(self.classify_data_select, self.table_classify,
-                                            row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
-                                            self.button_classify), column(self.table_class_rep_classify,
-                                            row(self.classify_cm_plot, self.classify_fi_plot)))),
-                            title = "Classification")
-
-        return tab_classify
 
 
 class main_tool(eda_plots, linear_regression, logistic_regression, clustering, classification):
@@ -1080,10 +1146,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.text_font = 'times'
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
-        # self.callback = CustomJS(args={}, 
-        #      code= """var x = document.getElementById("toast")
-        #          x.className = "show";
-        #          setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+        self.error_count = 0
 
     def run_tool(self):
         eda_tab = self.exploration_plots()

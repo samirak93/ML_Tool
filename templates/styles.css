@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+
 h1 {
     padding-bottom: 10px;
     margin: 1.5em 0 1.5em 0;
     color: black;
-    font-family: 'times';
+    font-family: 'Font Awesome\ 5 Free', times;
     font-size: 2em;
     text-transform: uppercase;
 }
@@ -10,7 +12,7 @@ h1 {
     z-index: 2;
     display: inherit;
     padding: 20px;
-    font-family: 'times';
+    font-family: 'Font Awesome\ 5 Free', times;
     position: relative;
     font-size: 12pt;
     width: 100%;
@@ -33,7 +35,7 @@ h1 {
 }
 .bk-root .bk-widget-form-input {
     -moz-appearance: none;
-	  font-family: 'times';
+	  font-family: 'Font Awesome\ 5 Free' , times;
     font-size: 13pt;
     display: block;
     padding: 0;
@@ -123,12 +125,13 @@ div.chart_div table {
 }
 .bk-root .bk-input {
     display: inline-block;
-    width: 300px;
+    width: 250px;
     flex-grow: 1;
     -webkit-flex-grow: 1;
     min-height: 31px;
     padding: 0 12px;
     background-color: #fff;
+    font-size: 16px;
 }
 
 .slick-cell {
@@ -231,7 +234,7 @@ footer {
     padding-top: 10px;
     margin: 1.5em 0 1.5em 0;
     color: black;
-    font-family: 'times';
+    font-family: 'Font Awesome\ 5 Free' , times;
     font-size: 16px;
     /* text-transform: uppercase; */
 }
@@ -263,18 +266,22 @@ footer {
     background-color: dodgerblue;
     color: #fff;
     z-index: 9;
+    vertical-align: middle;
+    position: absolute;
 }
 #toast #desc{
     color: #fff;
-    z-index: -1;
+    z-index: 9;
     padding: 16px;
     overflow: hidden;
-	white-space: nowrap;
+    white-space: nowrap;
+    text-align: center;
+    /* position: sticky; */
 }
 
 #toast.show {
-    z-index: 9;
-    position: sticky;
+    /* z-index: 9; */
+    /* position: sticky; */
     visibility: visible;
     -webkit-animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 2s, fadeout 0.5s 2.5s;
     animation: fadein 0.5s, expand 0.5s 0.5s,stay 3s 1s, shrink 0.5s 4s, fadeout 0.5s 4.5s;

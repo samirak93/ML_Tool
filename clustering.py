@@ -16,9 +16,8 @@ from sklearn.exceptions import ConvergenceWarning
 ConvergenceWarning('ignore')
 
 
-def get_elbow_plot(X, div_loading):
+def get_elbow_plot(X):
 
-    div_loading.text = """Optimizing clusters..."""
     output_text = ""
     try:
         model = KMeans(random_state=40,)
@@ -35,14 +34,10 @@ def get_elbow_plot(X, div_loading):
     except ValueError as e:
         print(e)
 
-    div_loading.text = """Optimizing clusters completed..."""
-
     return output_text
 
 
-def get_tsne(df, c_no, mapper, div_loading):
-
-    div_loading.text = """Optimizing clusters completed...<br>Plotting clusters...</br>"""
+def get_tsne(df, c_no, mapper):
 
     clust_norm_data_df = pd.DataFrame(df)
     source_clust_data = dict()
@@ -63,13 +58,11 @@ def get_tsne(df, c_no, mapper, div_loading):
     except ValueError as e:
         print (e)
 
-    div_loading.text = """Optimizing clusters completed...<br>Clusters plotted...</br>"""
-
     return source_clust_data
 
 
 def clustering_data(clust_df, active_features, active_norm, active_clust_no,
-                    clustering_data_source, mapper, clust_scat, div_loading):
+                    clustering_data_source, mapper, clust_scat):
 
     if 'ALL' in active_features:
         clust_df = clust_df
@@ -85,8 +78,8 @@ def clustering_data(clust_df, active_features, active_norm, active_clust_no,
     if clust_norm_data.shape[1] == 1:
         clust_norm_data = clust_norm_data.values.reshape(-1, 1)
 
-    output_text = get_elbow_plot(clust_norm_data, div_loading)
+    output_text = get_elbow_plot(clust_norm_data)
     clust_scat.title.text = output_text
 
-    source_clust_data = get_tsne(clust_norm_data, active_clust_no, mapper, div_loading)
+    source_clust_data = get_tsne(clust_norm_data, active_clust_no, mapper)
     return source_clust_data
