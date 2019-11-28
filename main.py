@@ -95,40 +95,17 @@ class eda_plots(plot_attributes):
             ticker_x_dict, ticker_y_dict = {}, {}
             xs, ys = [], []
             if select_x_axis != "None" and select_y_axis != "None":
-                if str(self.eda_df[select_x_axis].dtype) == 'object':
-                    xs = pd.Categorical(self.eda_df[select_x_axis]).codes
-                    self.plot_scatter.xaxis.ticker = list(set(pd.Categorical(self.eda_df[select_x_axis]).codes))
-                    ticker_x_dict = dict(enumerate(pd.Categorical(self.eda_df[select_x_axis]).categories))
-                    self.plot_scatter.xaxis.major_label_overrides = ticker_x_dict
-                    self.plot_scatter.xaxis.major_label_orientation = pi / 4
-                elif str(self.eda_df[select_x_axis].dtype) != 'object':
                     if self.log_x_cb.active:
                         if self.log_x_cb.active[0] == 0:
                             xs = np.log(self.eda_df[select_x_axis].values + 1)
-                            self.plot_scatter.xaxis.major_label_overrides = {'0':"0"}
-                            self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
                     else:
                         xs = self.eda_df[select_x_axis].values
-                        self.plot_scatter.xaxis.major_label_overrides = {'0':"0"}
-                        self.plot_scatter.xaxis.ticker = np.linspace(xs.min(),xs.max(), num=5).tolist()
                 
-                if str(self.eda_df[select_y_axis].dtype) == 'object':
-                    ys = pd.Categorical(self.eda_df[select_y_axis]).codes
-                    self.plot_scatter.yaxis.ticker = list(set(pd.Categorical(self.eda_df[select_y_axis]).codes))
-                    ticker_y_dict = dict(enumerate(pd.Categorical(self.eda_df[select_y_axis]).categories))
-                    self.plot_scatter.yaxis.major_label_overrides = ticker_y_dict
-                    self.plot_scatter.yaxis.major_label_orientation = pi / 4
-
-                elif str(self.eda_df[select_y_axis].dtype) != 'object':
                     if self.log_y_cb.active:
                         if self.log_y_cb.active[0] == 0:
                             ys = np.log(self.eda_df[select_y_axis].values + 1)
-                            self.plot_scatter.yaxis.major_label_overrides = {'0':"0"}
-                            self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
                     else:
                         ys = self.eda_df[select_y_axis].values
-                        self.plot_scatter.yaxis.major_label_overrides = {'0':"0"}
-                        self.plot_scatter.yaxis.ticker = np.linspace(ys.min(),ys.max(), num=5).tolist()
 
             self.plot_scatter.xaxis.axis_label = select_x_axis
             self.plot_scatter.yaxis.axis_label = select_y_axis
@@ -151,7 +128,6 @@ class eda_plots(plot_attributes):
         active_df = self.explore_data_select.value
 
         if active_df != "Select dataset":
-
             hist, edges = [], []
             if self.select_hist.value != 'None':
                 self.plot_hist.xaxis.axis_label = self.select_hist.value
@@ -166,6 +142,21 @@ class eda_plots(plot_attributes):
                 hist, edges = np.histogram(log_hist, bins=self.slider_bins.value)
 
             self.source_histogram.data = dict(top=hist, left=edges[:-1], right=edges[1:])
+
+    def create_count_figure(self):
+        active_df = self.explore_data_select.value
+
+        if active_df != "Select dataset":
+            count_column, count_value = [], []
+            if self.select_count_plot.value != 'None':
+                self.plot_count_plot.xaxis.axis_label = self.select_count_plot.value
+                self.plot_count_plot.yaxis.axis_label = 'Count'
+
+                count_df = self.eda_df[self.select_count_plot.value].value_counts().to_frame()
+                
+                count_column, count_value = count_df.index.tolist(), count_df[self.select_count_plot.value].values.tolist()
+                self.plot_count_plot.x_range.factors = list(count_column)
+                self.source_count_plot.data = dict(x=list(count_column), y=list(count_value))
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
@@ -183,16 +174,24 @@ class eda_plots(plot_attributes):
             self.source_eda.data = dict(eda_df)
             self.table_eda.columns = [TableColumn(field=cols, title=cols, width=90) for cols in eda_df.columns]
 
-            self.select_x_axis.options = ["None"] + eda_df.columns.values.tolist()
-            self.select_y_axis.options = ["None"] + eda_df.columns.values.tolist()
-
+            filter_objects = {}
+            filter_numeric = {}
             likely_cat = {}
             for var in eda_df.columns:
+                filter_objects[var] = eda_df[var].dtype == np.float64 or eda_df[var].dtype == np.int64
+                filter_numeric[var] = str(eda_df[var].dtype) == 'object'
                 likely_cat[var] = eda_df[var].nunique() <= 20
-            likely_cat = [k for k, v in likely_cat.items() if v is True]
+                
+            filter_objects = [k for k, v in filter_objects.items() if v is True]
+            self.select_x_axis.options = ["None"] + filter_objects
+            self.select_y_axis.options = ["None"] + filter_objects
+            self.select_hist.options = ["None"] + filter_objects
 
+            likely_cat = [k for k, v in likely_cat.items() if v is True]
             self.select_color.options = ['None'] + likely_cat
-            self.select_hist.options = ["None"] + eda_df.columns.values.tolist()
+
+            filter_numeric = [k for k, v in filter_numeric.items() if v is True]
+            self.select_count_plot.options = ["None"] + filter_numeric
 
             self.select_x_axis.value = "None"
             self.select_y_axis.value = "None"
@@ -224,6 +223,11 @@ class eda_plots(plot_attributes):
             self.button_hist_plot.disabled = False
         else:
             self.button_hist_plot.disabled = True
+        
+        if self.select_count_plot.value != "None":
+            self.button_count_plot.disabled = False
+        else:
+            self.button_count_plot.disabled = True
 
     def exploration_plots(self):
 
@@ -262,6 +266,29 @@ class eda_plots(plot_attributes):
         self.plot_hist.min_border_left = 50
         self.plot_hist.min_border_bottom = 50
 
+        count_column, count_value = [], []
+
+        self.source_count_plot = ColumnDataSource(data=dict(x=count_column, y=count_value))
+
+        hover_count_plot = HoverTool(
+            tooltips=[("Category:", "@x"),
+                      ("Count:", "@y{int}")])
+        self.plot_count_plot = figure(title="Count Plot", plot_height=600, plot_width=800,
+                                   tools=['pan,box_zoom,reset']+[hover_count_plot], x_range = [])
+        self.plot_count_plot.vbar(x='x', top='y', width=0.9, source=self.source_count_plot, 
+                                    fill_color='dodgerblue', 
+                                    line_color="white", fill_alpha=0.8)
+        self.plot_count_plot.background_fill_color = self.background_fill_color
+        self.plot_count_plot.border_fill_color = self.border_fill_color
+        self.plot_count_plot.title.align = self.title_align
+        self.plot_count_plot.title.text_font = self.text_font
+        self.plot_count_plot.axis.axis_label_text_font = self.axis_label_text_font
+        self.plot_count_plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
+        self.plot_count_plot.title.text_font_size = self.text_font_size
+        self.plot_count_plot.min_border_left = 50
+        self.plot_count_plot.min_border_bottom = 50
+        self.plot_count_plot.xaxis.major_label_orientation = pi / 4
+        
         self.explore_data_select = Select(title="Dataset:", value="Select dataset",
                                           options=["Select dataset"] + list(self.eda_data_source.keys()))
         self.select_x_axis = Select(title="X-Axis:", value="None", options=["None"])
@@ -281,18 +308,26 @@ class eda_plots(plot_attributes):
         self.button_hist_plot = Button(label="Draw Histogram")
         self.button_hist_plot.disabled = True
 
+        self.select_count_plot = Select(title="Count Plot Value:", value="None", options=["None"])
+        self.button_count_plot = Button(label="Draw Count Plot")
+        self.button_count_plot.disabled = True
+
         self.select_x_axis.on_change('value', self.eda_button_enable)
         self.select_y_axis.on_change('value', self.eda_button_enable)
         self.select_hist.on_change('value', self.eda_button_enable)
+        self.select_count_plot.on_change('value', self.eda_button_enable)
         self.explore_data_select.on_change("value", self.eda_table)
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
+        self.button_count_plot.on_click(self.create_count_figure)
 
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
                                      row(column(self.select_hist, self.log_hist_cb, self.slider_bins,
-                                                self.button_hist_plot), self.plot_hist)),
+                                                self.button_hist_plot), self.plot_hist),
+                                     row(column(self.select_count_plot,
+                                                self.button_count_plot), self.plot_count_plot)),
                         title="Exploration")
         return tab_eda
 
