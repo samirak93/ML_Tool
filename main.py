@@ -80,9 +80,9 @@ class eda_plots(plot_attributes):
         self.eda_df = None
         self.button_count_plot = None
         self.plot_count_plot = None
-        self.reset_data()
+        self.reset_data_eda()
 
-    def reset_data(self):
+    def reset_data_eda(self):
         self.source_scatter.data = dict(x=[], y=[], color=[])
         self.source_histogram.data = dict(top=[], left=[], right=[])
         self.source_count_plot.data = dict(x=[], y=[])
@@ -187,9 +187,9 @@ class eda_plots(plot_attributes):
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
-        self.reset_data()
+        
         if active_df != "Select dataset":
-
+            self.reset_data_eda()
             self.file_path = str(self.cwd + self.data_path +
                                  str(self.eda_data_source.get(active_df)))
             self.eda_df = pd.read_csv(self.file_path)
@@ -223,7 +223,7 @@ class eda_plots(plot_attributes):
             self.select_count_plot.options = ["None"] + filter_numeric
 
         else:
-            self.reset_data()
+            self.reset_data_eda()
             
     def eda_button_enable(self, attr, old, new):
 
@@ -385,7 +385,7 @@ class linear_regression(plot_attributes):
         self.active_df = None
         self.reg_df = None
         self.normalize_linreg = None
-        # self.reset_data_reg()
+        self.reset_data_reg()
 
     def reset_data_reg(self):
         self.source_reg.data = {}
@@ -394,6 +394,8 @@ class linear_regression(plot_attributes):
         self.source_hist_resid.data = dict(top=[], bottom=[], right=[])
         self.legend_reg.items = []
         self.table_reg.columns = []
+        self.color_bar_reg.scale_alpha = 0
+        self.color_bar_reg.major_label_text_alpha = 0
         self.reg_features_ms.options = ["ALL"]
         self.reg_features_ms.value = ["ALL"]
         self.reg_target_ms.options = ['SELECT TARGET']
@@ -416,8 +418,8 @@ class linear_regression(plot_attributes):
         tick_dict = OrderedDict([[tick, labels[ii]]
                                  for ii, tick in enumerate(ticks)])
 
-        self.color_bar.scale_alpha = 1
-        self.color_bar.major_label_text_alpha = 1
+        self.color_bar_reg.scale_alpha = 1
+        self.color_bar_reg.major_label_text_alpha = 1
         self.plot_corr.xaxis.ticker = ticks
         self.plot_corr.yaxis.ticker = ticks
         self.plot_corr.xaxis.major_label_overrides = tick_dict
@@ -544,19 +546,19 @@ class linear_regression(plot_attributes):
         self.plot_corr.y_range.flipped = True
 
         corr_colors = list(reversed(RdBu[9]))
-        mapper = LinearColorMapper(palette=corr_colors, low=-1, high=1)
-        self.color_bar = ColorBar(color_mapper=mapper, location=(
-            0, 0), scale_alpha=0, major_label_text_alpha=0)
-        self.plot_corr.add_layout(self.color_bar, 'right')
-        self.color_bar.background_fill_color = 'whitesmoke'
+        self.reg_mapper = LinearColorMapper(palette=corr_colors, low=-1, high=1)
+                                            
+        self.color_bar_reg = ColorBar(color_mapper=self.reg_mapper, location=(0, 0),
+                            ticker=BasicTicker(desired_num_ticks=len(corr_colors)),
+                                      scale_alpha=0, major_label_text_alpha=0)
+        self.plot_corr.add_layout(self.color_bar_reg, 'right')
+        self.color_bar_reg.background_fill_color = 'whitesmoke'
 
         actual_reg, predict_reg = [], []
-        self.source_reg_scat = ColumnDataSource(
-            data=dict(actual=actual_reg, predict=predict_reg))
+        self.source_reg_scat = ColumnDataSource(data=dict(actual=actual_reg, predict=predict_reg))
 
-        self.hover_reg = HoverTool(
-            tooltips=[("Actual", "@actual{int}"),
-                      ("Predicted", "@predict{int}")])
+        self.hover_reg = HoverTool(tooltips=[("Actual", "@actual{int}"),
+                                                ("Predicted", "@predict{int}")])
 
         self.plot_reg = figure(plot_height=500, plot_width=900,
                                tools=['pan,box_zoom,reset,wheel_zoom'] + [self.hover_reg])
@@ -574,8 +576,7 @@ class linear_regression(plot_attributes):
         self.plot_reg.yaxis.axis_label = "Predicted Value"
 
         residual, predict_reg = [], []
-        self.source_reg_resid = ColumnDataSource(
-            data=dict(predict=predict_reg, residual=residual))
+        self.source_reg_resid = ColumnDataSource(data=dict(predict=predict_reg, residual=residual))
 
         self.hover_resid = HoverTool(tooltips=[("Predicted", "@predict{int}"),
                                                ("Residual", "@residual{int}")],
@@ -656,28 +657,35 @@ class logistic_regression(plot_attributes):
 
         self.active_df = None
         self.logreg_df = None
-        self.source_logreg = None
         self.legend_roc = None
         self.roc_line = None
         self.hover_logreg_cm = None
         self.color_bar_logreg_cm = None
         self.table_class_rep = None
-        self.logreg_target_ms = None
-        self.table_logreg = None
         self.button_logreg = None
         self.hover_logreg_roc = None
         self.labels_logreg_cm = None
-        self.logreg_cm_mapper = None
-        self.logreg_cm_plot = None
-        self.logreg_data_select = None
-        self.logreg_features_ms = None
         self.logreg_roc_plot = None
-        self.source_class_rep = None
-        self.source_logreg_cm = None
-        self.source_logreg_roc = None
-        self.source_logreg_const_roc = None
         self.normalize_logreg = None
         self.div_report_title = None
+        self.reset_data_logreg()
+
+    def reset_data_logreg(self):
+        self.source_logreg.data = {}
+        self.source_class_rep_logreg.data = {}
+        self.source_logreg_cm.data = dict(Actual=[], Prediction=[], value=[])
+        self.source_logreg_roc.data = dict(fpr_roc=[], tpr_roc=[])
+        self.source_logreg_const_roc.data = dict(const_roc_x=[], const_roc_y=[])
+        self.table_logreg.columns = []
+        self.table_class_rep_logreg.columns = []
+        self.legend_roc.items = []
+        self.color_bar_logreg_cm.scale_alpha = 0
+        self.color_bar_logreg_cm.major_label_text_alpha = 0
+        self.logreg_features_ms.options = ["ALL"]
+        self.logreg_features_ms.value = ["ALL"]
+        self.logreg_target_ms.options = ['SELECT TARGET']
+        self.logreg_target_ms.value = 'SELECT TARGET'
+        self.button_logreg.disabled = True
 
     def logreg_button_enable(self, attr, old, new):
 
@@ -690,6 +698,8 @@ class logistic_regression(plot_attributes):
         self.active_df = self.logreg_data_select.value
 
         if self.active_df != "Select dataset":
+            self.reset_data_logreg()
+
             self.file_path = str(self.cwd + self.data_path +
                                  str(self.logreg_data_source.get(self.active_df)))
 
@@ -714,13 +724,7 @@ class logistic_regression(plot_attributes):
             self.logreg_target_ms.options = ['SELECT TARGET'] + likely_cat
             self.button_logreg.disabled = True
         else:
-            self.source_logreg.data = {}
-            self.table_logreg.columns = []
-            self.logreg_features_ms.options = ["ALL"]
-            self.logreg_features_ms.value = ["ALL"]
-            self.logreg_target_ms.options = ['SELECT TARGET']
-            self.logreg_target_ms.value = 'SELECT TARGET'
-            self.button_logreg.disabled = True
+            self.reset_data_logreg()
 
     def logreg_plot(self):
         features = self.logreg_features_ms.value
@@ -772,8 +776,7 @@ class logistic_regression(plot_attributes):
         self.logreg_roc_plot.yaxis.axis_label = "True Positive Rate"
         self.legend_roc.items = [LegendItem(label="Logistic Regression (area = " + str(logit_roc_auc) + ")",
                                             renderers=[self.roc_line])]
-        self.source_logreg_const_roc.data = dict(
-            const_roc_x=[0, 1], const_roc_y=[0, 1])
+        self.source_logreg_const_roc.data = dict(const_roc_x=[0, 1], const_roc_y=[0, 1])
 
         self.error_count += 1
         self.alert_logreg.text = str(
@@ -801,8 +804,7 @@ class logistic_regression(plot_attributes):
         self.source_logreg_cm = ColumnDataSource(
             data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
 
-        self.logreg_cm_mapper = LinearColorMapper(
-            palette=logreg_cm_colors, low=0, high=100)
+        self.logreg_cm_mapper = LinearColorMapper(palette=logreg_cm_colors, low=0, high=100)
 
         self.labels_logreg_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
                                          y_offset=-10,
@@ -838,8 +840,8 @@ class logistic_regression(plot_attributes):
                                           names=['roc'])
 
         fpr_roc, tpr_roc = [], []
-        self.source_logreg_roc = ColumnDataSource(
-            data=dict(fpr_roc=fpr_roc, tpr_roc=tpr_roc))
+
+        self.source_logreg_roc = ColumnDataSource(data=dict(fpr_roc=fpr_roc, tpr_roc=tpr_roc))
 
         const_roc_x, const_roc_y = [], []
         self.source_logreg_const_roc = ColumnDataSource(
@@ -1041,8 +1043,8 @@ class classification(plot_attributes):
 
         classify_cm_colors = list(reversed(Blues[9]))
         actual_cm, predicted_cm, value_cm = [], [], []
-        self.source_classify_cm = ColumnDataSource(
-            data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
+        self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, 
+                                                    value=value_cm))
 
         self.classify_cm_mapper = LinearColorMapper(
             palette=classify_cm_colors, low=0, high=100)
