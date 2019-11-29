@@ -12,9 +12,9 @@ from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Bl
 from bokeh.transform import linear_cmap, transform
 from bokeh.models.ranges import FactorRange
 from bokeh.transform import factor_cmap
-from bokeh.models.callbacks import CustomJS
 from bokeh.models.tickers import FixedTicker, SingleIntervalTicker
 from bokeh import events
+from bokeh.models.callbacks import CustomJS
 
 from math import pi
 from collections import OrderedDict
@@ -26,6 +26,7 @@ from clustering import get_elbow_plot, get_tsne, clustering_data
 from regression import get_corr_plot, get_regression_plot, get_colors
 from logistic_regression import get_logreg_output
 from classification import get_classify_output
+from custom_js import callback_button_plot, callback_notification
 
 import warnings
 import os
@@ -146,6 +147,7 @@ class eda_plots(plot_attributes):
                 self.source_scatter.data = dict(x=xs, y=ys, color=scat_color)
 
     def create_hist_figure(self):
+        print (True)
         active_df = self.explore_data_select.value
 
         if active_df != "Select dataset":
@@ -313,7 +315,7 @@ class eda_plots(plot_attributes):
             title="Y-Axis:", value="None", options=["None"])
         self.select_color = Select(
             title="Color:", value="None", options=["None"])
-        self.button_eda_plot = Button(label="Draw Plot")
+        self.button_eda_plot = Button(label="Draw Plot", css_classes= ['button'])
         self.button_eda_plot.disabled = True
 
         self.select_hist = Select(
@@ -328,12 +330,12 @@ class eda_plots(plot_attributes):
         self.log_hist_cb = CheckboxGroup(
             labels=["Log transform axis"], active=[])
 
-        self.button_hist_plot = Button(label="Draw Histogram")
+        self.button_hist_plot = Button(label="Draw Histogram", css_classes= ['button'])
         self.button_hist_plot.disabled = True
 
         self.select_count_plot = Select(
             title="Count Plot Value:", value="None", options=["None"])
-        self.button_count_plot = Button(label="Draw Count Plot")
+        self.button_count_plot = Button(label="Draw Count Plot", css_classes= ['button'])
         self.button_count_plot.disabled = True
 
         self.select_x_axis.on_change('value', self.eda_button_enable)
@@ -344,7 +346,7 @@ class eda_plots(plot_attributes):
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
         self.button_count_plot.on_click(self.create_count_figure)
-        
+
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
@@ -619,7 +621,7 @@ class linear_regression(plot_attributes):
 
         self.reg_target_ms = Select(title="Select target for regression:", value="SELECT TARGET",
                                     options=["SELECT TARGET"])
-        self.button_reg = Button(label="Calculate regression")
+        self.button_reg = Button(label="Calculate regression" , css_classes= ['button'])
         self.button_reg.disabled = True
 
         self.reg_data_select.on_change("value", self.create_figure_reg)
@@ -629,8 +631,8 @@ class linear_regression(plot_attributes):
         self.div_whitespace = Div(text="""""", height=100)
 
         self.alert_reg = Div(text='', css_classes=['hidden'], visible=False)
-
-        self.alert_reg.js_on_change('text', self.callback)
+        
+        self.alert_reg.js_on_change('text', callback_notification)
 
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
@@ -865,7 +867,7 @@ class logistic_regression(plot_attributes):
 
         self.logreg_target_ms = Select(title="Select target for Logistic regression:", value="SELECT TARGET",
                                        options=["SELECT TARGET"])
-        self.button_logreg = Button(label="Calculate regression")
+        self.button_logreg = Button(label="Calculate regression", css_classes= ['button'])
         self.button_logreg.disabled = True
 
         self.logreg_data_select.on_change("value", self.create_figure_logreg)
@@ -878,7 +880,7 @@ class logistic_regression(plot_attributes):
         self.alert_logreg = Div(text='', css_classes=['hidden'], visible=False)
         
 
-        self.alert_logreg.js_on_change('text', self.callback)
+        self.alert_logreg.js_on_change('text', callback_notification)
 
         tab_logreg = Panel(child=column(self.logreg_data_select, self.table_logreg,
                                         row(column(self.logreg_features_ms, self.normalize_logreg,
@@ -1098,7 +1100,7 @@ class classification(plot_attributes):
 
         self.classify_target_ms = Select(title="Select target for Classification:", value="SELECT TARGET",
                                          options=["SELECT TARGET"])
-        self.button_classify = Button(label="Perform classification")
+        self.button_classify = Button(label="Perform classification", css_classes= ['button'])
         self.button_classify.disabled = True
 
         self.classify_data_select.on_change(
@@ -1112,7 +1114,7 @@ class classification(plot_attributes):
         self.alert_classify = Div(text='', css_classes=[
                                   'hidden'], visible=False)
 
-        self.alert_classify.js_on_change('text', self.callback)
+        self.alert_classify.js_on_change('text', callback_notification)
 
         tab_classify = Panel(child=column(self.classify_data_select, self.table_classify,
                                     row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
@@ -1212,7 +1214,7 @@ class clustering(plot_attributes):
             labels=["Actual Data", "Normalize Data"], active=0)
         self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1,
                                    callback_policy='mouseup', css_classes=['custom_slider'])
-        self.button_cluster = Button(label="Calculate and plot clusters")
+        self.button_cluster = Button(label="Calculate and plot clusters", css_classes= ['button'])
         self.button_cluster.disabled = True
 
         self.clus_data_select.on_change("value", self.clustering_plot)
@@ -1221,7 +1223,7 @@ class clustering(plot_attributes):
         self.alert_cluster = Div(text='', css_classes=[
                                  'hidden'], visible=False)
 
-        self.alert_cluster.js_on_change('text', self.callback)
+        self.alert_cluster.js_on_change('text', callback_notification)
 
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
@@ -1267,13 +1269,7 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
         self.error_count = 0
-        self.callback = CustomJS(args={},
-                                        code="""var x = document.getElementById("toast")
-                x.className = "show";
-                s = cb_obj.text
-                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
-
+        
     def run_tool(self):
         eda_tab = self.exploration_plots()
         linreg_tab = self.lin_reg()

@@ -47,22 +47,22 @@ h1 {
     border-radius: 40px;
     border-color: whitesmoke;
 }
-.bk-root .bk-bs-btn-default.bk-bs-active{
+/* .bk-root .bk-bs-btn-default.bk-bs-active{
     color: whitesmoke;
     background-color: dodgerblue;
     border-color: whitesmoke;
     -webkit-appearance: none;
     font-size: 14px;
-}
+} */
 
-.bk-root .bk-bs-btn-default {
+/* .bk-root .bk-bs-btn-default {
     color: black;
     background-color: whitesmoke;
     border-color: #ccc;
     margin-top: 17px;
     font-size: 14px;
     
-}
+} */
 
 .bk-root .bk-tabs-header .bk-tab.bk-active {
     background-color: dodgerblue;
@@ -181,7 +181,11 @@ div.chart_div table {
     font-weight: bold;
     font-size: 14px;
 }
-.bk-root .bk-btn {
+ .bk-root .bk-btn {
+    color: black;
+    background-color: none;
+    border-color: white;
+    font-size: 14px;
             height: 100%;
             display: inline-block;
             text-align: center;
@@ -197,14 +201,15 @@ div.chart_div table {
             -ms-user-select: none;
             -moz-user-select: none;
             -webkit-user-select: none;
-}
+} 
         
-.bk-root .bk-btn-default {
+/* .bk-root .bk-btn {
     color: black;
     background-color: none;
     border-color: white;
-}
-.bk-root .bk-btn-default:hover {
+    font-size: 14px;
+} */
+.bk-root .bk-btn:hover {
     background-color: dodgerblue;
     border-color: white;
     color: white;
@@ -212,7 +217,7 @@ div.chart_div table {
     transition: color 0.5s;
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
 }
-.bk-root .bk-btn-default.bk-active {
+.bk-root .bk-btn.bk-active {
     background-color: dodgerblue;
     border-color: white;
     color: white;
@@ -369,3 +374,24 @@ footer {
     from {bottom: 30px; opacity: 1;}
     to {bottom: 60px; opacity: 0;}
 }
+
+
+.button {
+    color: black;
+    background-color: none;
+    border-color: dodgerblue;
+    border-radius: 30px;
+}
+/* .button:hover {
+    background-color: dodgerblue;
+    border-color: white;
+    color: white;
+    transition: background-color 0.5s;
+    transition: color 0.5s;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
+} */
+/* .button.bk-active {
+    background-color: dodgerblue;
+    border-color: white;
+    color: white;
+} */
