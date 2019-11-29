@@ -14,6 +14,7 @@ from bokeh.models.ranges import FactorRange
 from bokeh.transform import factor_cmap
 from bokeh.models.callbacks import CustomJS
 from bokeh.models.tickers import FixedTicker, SingleIntervalTicker
+from bokeh import events
 
 from math import pi
 from collections import OrderedDict
@@ -343,7 +344,7 @@ class eda_plots(plot_attributes):
         self.button_eda_plot.on_click(self.create_eda_figure)
         self.button_hist_plot.on_click(self.create_hist_figure)
         self.button_count_plot.on_click(self.create_count_figure)
-
+        
         tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
@@ -628,14 +629,8 @@ class linear_regression(plot_attributes):
         self.div_whitespace = Div(text="""""", height=100)
 
         self.alert_reg = Div(text='', css_classes=['hidden'], visible=False)
-        self.callback_reg = CustomJS(args={},
-                                     code="""var x = document.getElementById("toast")
-                x.className = "show";
-                s = cb_obj.text
-                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
 
-        self.alert_reg.js_on_change('text', self.callback_reg)
+        self.alert_reg.js_on_change('text', self.callback)
 
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
@@ -881,14 +876,9 @@ class logistic_regression(plot_attributes):
             text="""<center>Classification Report</center>""", width=600)
 
         self.alert_logreg = Div(text='', css_classes=['hidden'], visible=False)
-        self.callback_logreg = CustomJS(args={},
-                                        code="""var x = document.getElementById("toast")
-                x.className = "show";
-                s = cb_obj.text
-                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+        
 
-        self.alert_logreg.js_on_change('text', self.callback_logreg)
+        self.alert_logreg.js_on_change('text', self.callback)
 
         tab_logreg = Panel(child=column(self.logreg_data_select, self.table_logreg,
                                         row(column(self.logreg_features_ms, self.normalize_logreg,
@@ -1018,7 +1008,7 @@ class classification(plot_attributes):
         rf_df = pd.DataFrame(dict({'rf_features': rf_feature_labels,
                                    'rf_importance': rf_feature_importance})).nlargest(15, "rf_importance")
         self.source_classify_fi.data = dict(rf_df)
-        self.classify_fi_plot.y_range.factors = rf_df['rf_features'].values.tolist(
+        self.classify_fi_plot.x_range.factors = rf_df['rf_features'].values.tolist(
         )
 
         self.error_count += 1
@@ -1083,20 +1073,21 @@ class classification(plot_attributes):
                                                      ("Importance Score", "@rf_importance{0.02f}")])
         self.source_classify_fi = ColumnDataSource(
             data=dict(rf_features=rf_features, rf_importance=rf_importance))
-        self.classify_fi_plot = figure(y_range=rf_features, plot_width=600, plot_height=500, toolbar_location=None,
+        self.classify_fi_plot = figure(x_range=[], plot_width=600, plot_height=600, toolbar_location=None,
                                        title="Feature Importance", tools=[self.hover_classify_fi])
-        self.classify_fi_plot.hbar(y='rf_features', right='rf_importance', left=0, height=0.5,
+        self.classify_fi_plot.vbar(x='rf_features', top='rf_importance', bottom=0, width=0.9,
                                    source=self.source_classify_fi, line_color='white', fill_color='dodgerblue')
         self.classify_fi_plot.background_fill_color = self.background_fill_color
         self.classify_fi_plot.border_fill_color = self.border_fill_color
-        self.classify_fi_plot.xaxis.formatter = self.x_axis_format
+        self.classify_fi_plot.yaxis.formatter = self.x_axis_format
         self.classify_fi_plot.title.align = self.title_align
         self.classify_fi_plot.title.text_font = self.text_font
         self.classify_fi_plot.axis.axis_label_text_font = self.axis_label_text_font
-        self.classify_fi_plot.axis.axis_label_text_font_size = self.axis_label_text_font_size
+        self.classify_fi_plot.axis.axis_label_text_font_size = '8pt'
         self.classify_fi_plot.title.text_font_size = self.text_font_size
-        self.classify_fi_plot.min_border_top = 100
-        # self.classify_fi_plot.min_border_l = 40
+        self.classify_fi_plot.xaxis.major_label_orientation = pi / 4
+        self.classify_fi_plot.min_border_left = 50
+        self.classify_fi_plot.min_border_bottom = 100
 
         self.classify_data_select = Select(title="Dataset:", value="Select dataset",
                                            options=["Select dataset"] + list(self.classify_data_source.keys()))
@@ -1115,21 +1106,18 @@ class classification(plot_attributes):
         self.classify_target_ms.on_change("value", self.classify_button_enable)
         self.button_classify.on_click(self.classify_plot)
 
+        self.div_report_title = Div(
+            text="""<center>Classification Report</center>""", width=600)
+
         self.alert_classify = Div(text='', css_classes=[
                                   'hidden'], visible=False)
-        self.callback_classify = CustomJS(args={},
-                                          code="""var x = document.getElementById("toast")
-                x.className = "show";
-                s = cb_obj.text
-                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
 
-        self.alert_classify.js_on_change('text', self.callback_classify)
+        self.alert_classify.js_on_change('text', self.callback)
 
         tab_classify = Panel(child=column(self.classify_data_select, self.table_classify,
-                                          row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
-                                                     self.button_classify), column(self.table_class_rep_classify,
-                                                                                   column(self.classify_cm_plot, self.classify_fi_plot, self.alert_classify)))),
+                                    row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
+                                                     self.button_classify), 
+                                    column(self.div_report_title, self.table_class_rep_classify,column(self.classify_cm_plot, self.classify_fi_plot, self.alert_classify)))),
                              title="Classification")
 
         return tab_classify
@@ -1204,12 +1192,10 @@ class clustering(plot_attributes):
 
         self.hover_clust = HoverTool(tooltips=[("User", "$index"),
                                                ("Cluster", "@cluster")])
-        self.mapper = linear_cmap(field_name='cluster', palette=Set1[9], low=min(
-            cluster_col), high=max(cluster_col))
+        self.mapper = linear_cmap(field_name='cluster', palette=Set1[9], low=min(cluster_col), high=max(cluster_col))
         self.clust_scat = figure(plot_height=600, plot_width=850, tools=[
                                  'pan,box_zoom,reset,tap'] + [self.hover_clust])
-        self.clust_scat.scatter(
-            "x", 'y', source=self.source_clust, color=self.mapper, size=10, legend='cluster')
+        self.clust_scat.scatter( "x", 'y', source=self.source_clust, color=self.mapper, size=10, legend='cluster')
         self.clust_scat.axis.major_tick_line_color = None
         self.clust_scat.axis.minor_tick_line_color = None
         self.clust_scat.xaxis.axis_label = "Dimension 1"
@@ -1234,14 +1220,8 @@ class clustering(plot_attributes):
 
         self.alert_cluster = Div(text='', css_classes=[
                                  'hidden'], visible=False)
-        self.callback_cluster = CustomJS(args={},
-                                         code="""var x = document.getElementById("toast")
-                x.className = "show";
-                s = cb_obj.text
-                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
 
-        self.alert_cluster.js_on_change('text', self.callback_cluster)
+        self.alert_cluster.js_on_change('text', self.callback)
 
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
@@ -1287,6 +1267,12 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
         self.error_count = 0
+        self.callback = CustomJS(args={},
+                                        code="""var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
 
     def run_tool(self):
         eda_tab = self.exploration_plots()

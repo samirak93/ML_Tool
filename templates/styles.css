@@ -33,6 +33,7 @@ h1 {
 .bk-root .bk-widget select {
     min-width: 50%;
 }
+
 .bk-root .bk-widget-form-input {
     -moz-appearance: none;
 	  font-family: 'Font Awesome\ 5 Free' , times;
@@ -124,14 +125,33 @@ div.chart_div table {
     margin: 0 auto !important;
 }
 .bk-root .bk-input {
-    display: inline-block;
-    width: 250px;
-    flex-grow: 1;
-    -webkit-flex-grow: 1;
-    min-height: 31px;
-    padding: 0 12px;
-    background-color: #fff;
-    font-size: 16px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+	color: black;
+	width: 300px;
+	height: 30px;
+	cursor: pointer;
+	background: url(http://sharpik.com/wip/cuteselect/arrow.png) 295px 12px no-repeat white;
+}
+
+.bk-input:hover {
+	background-color: transparent;
+    color: black;
+    border: 1px solid dodgerblue;
+}
+.bk-input option {
+	background-color: transparent;
+	color: black;
+	width: 300px;
+	padding: 10px 15px;
+	height: 20px;
+	cursor: pointer;
+}
+
+.bk-input option:hover {
+	width: 300px;
+    color: dodgerblue;
+    border: 1px solid dodgerblue;
 }
 
 .slick-cell {
@@ -190,6 +210,7 @@ div.chart_div table {
     color: white;
     transition: background-color 0.5s;
     transition: color 0.5s;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
 }
 .bk-root .bk-btn-default.bk-active {
     background-color: dodgerblue;
@@ -229,6 +250,19 @@ body {
     position: relative;
     top: 0px;
     margin-left: 4px;
+    background-color:transparent;
+    cursor: pointer;
+}
+
+.bk-root  input[type="checkbox"] {
+    position: relative;
+    top: 0px;
+    margin-left: 4px;
+    background-color:dodgerblue;
+    cursor: pointer;
+    border: 2px solid dodgerblue;
+    border-radius: 5px;
+    
 }
 footer {
     padding-top: 10px;
@@ -260,19 +294,21 @@ footer {
 	width: 50px;
 	height: 50px;
     float: left;
-    padding-top: 16px;
-    padding-bottom: 16px;
+    padding: 10px;
+    /* padding-bottom: 16px; */
     box-sizing: border-box;
     background-color: dodgerblue;
     color: #fff;
     z-index: 9;
-    vertical-align: middle;
+    vertical-align: bottom;
     position: absolute;
+    text-align:center;
+    font-size: 20px;
 }
 #toast #desc{
     color: #fff;
     z-index: 9;
-    padding: 16px;
+    padding: 10px;
     overflow: hidden;
     white-space: nowrap;
     text-align: center;
