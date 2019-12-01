@@ -6,7 +6,7 @@ from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
     LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
-    CheckboxGroup, PreText, Paragraph
+    CheckboxGroup, PreText, Paragraph, FileInput
 from bokeh.layouts import column, row, widgetbox
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
@@ -26,10 +26,11 @@ from clustering import get_elbow_plot, get_tsne, clustering_data
 from regression import get_corr_plot, get_regression_plot, get_colors
 from logistic_regression import get_logreg_output
 from classification import get_classify_output
-from custom_js import callback_button_plot, callback_notification
 
+from pybase64 import b64decode
 import warnings
 import os
+import io
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -62,6 +63,47 @@ class plot_attributes(object):
         plot.title.text_font_size = self.text_font_size
 
         return plot
+
+
+class landing_page():
+    def __init__(self):
+        self.note = None
+
+    def upload_fit_data(self, attr, old, new):
+            print (file_input.filename)
+            decoded = b64decode(new)
+            f = io.BytesIO(decoded)
+            new_df = pd.read_csv(f)
+
+    def enable_upload(self, attr, old, new):
+        if self.load_data_source.active == 1:
+            self.file_input.disabled = False
+        else:
+            self.file_input.disabled = True
+
+    def landing_note(self):
+        self.note = Div(text="""Machine Learning Tool: <br> This is a tool to get hands-on experience with Machine Learning
+        concepts like Regression, Classification, Clustering. There are 2 ways to use this tool.</br></br>
+        <li>If you've a dataset of your choice, you can upload the dataset below. (<b>Note:</b> At this point, please only 
+        upload files that are either <i style= "color: red;">.csv/.xls</i> format and smaller in size (<30000 rows)). Larger files would  work but will
+        take longer time to execute the models and making plots. </li>
+        </br>
+        <li>The second option is to choose the pre-loaded datasets (open-source) avaialable within each section.</li> """,
+                        style={'font-size': '14pt', 'color': 'black'},
+                        width=1200, sizing_mode='stretch_both', css_classes=['div_landing'])
+
+
+        self.load_data_source = RadioButtonGroup(labels=["Use sample data", "Upload data"], active=0)
+
+        self.file_input = FileInput(accept=".csv,.xls", disabled= True)
+        self.file_input.disabled = True
+
+        self.load_data_source.on_change('active', self.enable_upload)
+        self.file_input.on_change('value', self.upload_fit_data)
+
+        tab_landing = Panel(child=column(self.note, row(self.load_data_source, self.file_input)),
+                            title="Home")
+        return tab_landing
 
 
 class eda_plots(plot_attributes):
@@ -147,7 +189,6 @@ class eda_plots(plot_attributes):
                 self.source_scatter.data = dict(x=xs, y=ys, color=scat_color)
 
     def create_hist_figure(self):
-        print (True)
         active_df = self.explore_data_select.value
 
         if active_df != "Select dataset":
@@ -190,7 +231,7 @@ class eda_plots(plot_attributes):
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
-        
+
         if active_df != "Select dataset":
             self.reset_data_eda()
             self.file_path = str(self.cwd + self.data_path +
@@ -227,7 +268,7 @@ class eda_plots(plot_attributes):
 
         else:
             self.reset_data_eda()
-            
+
     def eda_button_enable(self, attr, old, new):
 
         if (self.select_x_axis.value != 'None') and (self.select_y_axis.value != "None"):
@@ -287,10 +328,11 @@ class eda_plots(plot_attributes):
 
         count_column, count_value = [], []
 
-        self.source_count_plot = ColumnDataSource(data=dict(x=count_column, y=count_value))
+        self.source_count_plot = ColumnDataSource(
+            data=dict(x=count_column, y=count_value))
 
         hover_count_plot = HoverTool(tooltips=[("Category:", "@x"),
-                                                ("Count:", "@y{int}")])
+                                               ("Count:", "@y{int}")])
         self.plot_count_plot = figure(title="Count Plot", plot_height=600, plot_width=800,
                                       tools=['pan,box_zoom,reset']+[hover_count_plot], x_range=[])
         self.plot_count_plot.vbar(x='x', top='y', width=0.9, source=self.source_count_plot,
@@ -315,7 +357,7 @@ class eda_plots(plot_attributes):
             title="Y-Axis:", value="None", options=["None"])
         self.select_color = Select(
             title="Color:", value="None", options=["None"])
-        self.button_eda_plot = Button(label="Draw Plot", css_classes= ['button'])
+        self.button_eda_plot = Button(label="Draw Plot")
         self.button_eda_plot.disabled = True
 
         self.select_hist = Select(
@@ -330,12 +372,12 @@ class eda_plots(plot_attributes):
         self.log_hist_cb = CheckboxGroup(
             labels=["Log transform axis"], active=[])
 
-        self.button_hist_plot = Button(label="Draw Histogram", css_classes= ['button'])
+        self.button_hist_plot = Button(label="Draw Histogram")
         self.button_hist_plot.disabled = True
 
         self.select_count_plot = Select(
             title="Count Plot Value:", value="None", options=["None"])
-        self.button_count_plot = Button(label="Draw Count Plot", css_classes= ['button'])
+        self.button_count_plot = Button(label="Draw Count Plot")
         self.button_count_plot.disabled = True
 
         self.select_x_axis.on_change('value', self.eda_button_enable)
@@ -384,7 +426,7 @@ class linear_regression(plot_attributes):
         self.plot_resid = None
         self.reg_data_select = None
         self.reg_features_ms = None
-        self.reg_scatter = None    
+        self.reg_scatter = None
         self.active_df = None
         self.reg_df = None
         self.normalize_linreg = None
@@ -405,10 +447,9 @@ class linear_regression(plot_attributes):
         self.reg_target_ms.value = 'SELECT TARGET'
         self.button_logreg.disabled = True
         top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(
-                pd.DataFrame())
+            pd.DataFrame())
         self.corr_plot(top, bottom, left, right, labels,
-                           nlabels, color_list, corr)
-
+                       nlabels, color_list, corr)
 
     def corr_plot(self, top, bottom, left, right, labels, nlabels, color_list, corr):
 
@@ -476,7 +517,8 @@ class linear_regression(plot_attributes):
             self.plot_hist_resid.y_range.start, self.plot_hist_resid.y_range.end = residual.min(), residual.max()
 
             self.hline.line_alpha = 0.5
-            self.source_hist_resid.data = dict(top=vedges[1:], bottom=vedges[:-1], right=vhist)
+            self.source_hist_resid.data = dict(
+                top=vedges[1:], bottom=vedges[:-1], right=vhist)
 
             self.error_count += 1
             self.alert_reg.text = str(self.error_count)+" Regression Completed"
@@ -549,19 +591,22 @@ class linear_regression(plot_attributes):
         self.plot_corr.y_range.flipped = True
 
         corr_colors = list(reversed(RdBu[9]))
-        self.reg_mapper = LinearColorMapper(palette=corr_colors, low=-1, high=1)
-                                            
+        self.reg_mapper = LinearColorMapper(
+            palette=corr_colors, low=-1, high=1)
+
         self.color_bar_reg = ColorBar(color_mapper=self.reg_mapper, location=(0, 0),
-                            ticker=BasicTicker(desired_num_ticks=len(corr_colors)),
+                                      ticker=BasicTicker(
+                                          desired_num_ticks=len(corr_colors)),
                                       scale_alpha=0, major_label_text_alpha=0)
         self.plot_corr.add_layout(self.color_bar_reg, 'right')
         self.color_bar_reg.background_fill_color = 'whitesmoke'
 
         actual_reg, predict_reg = [], []
-        self.source_reg_scat = ColumnDataSource(data=dict(actual=actual_reg, predict=predict_reg))
+        self.source_reg_scat = ColumnDataSource(
+            data=dict(actual=actual_reg, predict=predict_reg))
 
         self.hover_reg = HoverTool(tooltips=[("Actual", "@actual{int}"),
-                                                ("Predicted", "@predict{int}")])
+                                             ("Predicted", "@predict{int}")])
 
         self.plot_reg = figure(plot_height=500, plot_width=900,
                                tools=['pan,box_zoom,reset,wheel_zoom'] + [self.hover_reg])
@@ -579,7 +624,8 @@ class linear_regression(plot_attributes):
         self.plot_reg.yaxis.axis_label = "Predicted Value"
 
         residual, predict_reg = [], []
-        self.source_reg_resid = ColumnDataSource(data=dict(predict=predict_reg, residual=residual))
+        self.source_reg_resid = ColumnDataSource(
+            data=dict(predict=predict_reg, residual=residual))
 
         self.hover_resid = HoverTool(tooltips=[("Predicted", "@predict{int}"),
                                                ("Residual", "@residual{int}")],
@@ -600,7 +646,8 @@ class linear_regression(plot_attributes):
 
         vhist, vedges = [], []
 
-        self.source_hist_resid = ColumnDataSource(data=dict(top=vedges[1:], bottom=vedges[:-1], right=vhist))
+        self.source_hist_resid = ColumnDataSource(
+            data=dict(top=vedges[1:], bottom=vedges[:-1], right=vhist))
         self.hover_resid_hist = HoverTool(tooltips=[("Count", "@right{int}")])
         self.plot_hist_resid = figure(toolbar_location=None, plot_width=200, plot_height=self.plot_resid.plot_height,
                                       y_range=self.plot_resid.y_range, min_border=10, y_axis_location="right",
@@ -621,7 +668,7 @@ class linear_regression(plot_attributes):
 
         self.reg_target_ms = Select(title="Select target for regression:", value="SELECT TARGET",
                                     options=["SELECT TARGET"])
-        self.button_reg = Button(label="Calculate regression" , css_classes= ['button'])
+        self.button_reg = Button(label="Calculate regression")
         self.button_reg.disabled = True
 
         self.reg_data_select.on_change("value", self.create_figure_reg)
@@ -631,8 +678,8 @@ class linear_regression(plot_attributes):
         self.div_whitespace = Div(text="""""", height=100)
 
         self.alert_reg = Div(text='', css_classes=['hidden'], visible=False)
-        
-        self.alert_reg.js_on_change('text', callback_notification)
+
+        self.alert_reg.js_on_change('text', self.callback_notification)
 
         tab_reg = Panel(child=column(self.reg_data_select, self.table_reg, self.plot_corr,
                                      row(column(self.reg_features_ms, self.normalize_linreg,
@@ -672,7 +719,8 @@ class logistic_regression(plot_attributes):
         self.source_class_rep_logreg.data = {}
         self.source_logreg_cm.data = dict(Actual=[], Prediction=[], value=[])
         self.source_logreg_roc.data = dict(fpr_roc=[], tpr_roc=[])
-        self.source_logreg_const_roc.data = dict(const_roc_x=[], const_roc_y=[])
+        self.source_logreg_const_roc.data = dict(
+            const_roc_x=[], const_roc_y=[])
         self.table_logreg.columns = []
         self.table_class_rep_logreg.columns = []
         self.legend_roc.items = []
@@ -773,7 +821,8 @@ class logistic_regression(plot_attributes):
         self.logreg_roc_plot.yaxis.axis_label = "True Positive Rate"
         self.legend_roc.items = [LegendItem(label="Logistic Regression (area = " + str(logit_roc_auc) + ")",
                                             renderers=[self.roc_line])]
-        self.source_logreg_const_roc.data = dict(const_roc_x=[0, 1], const_roc_y=[0, 1])
+        self.source_logreg_const_roc.data = dict(
+            const_roc_x=[0, 1], const_roc_y=[0, 1])
 
         self.error_count += 1
         self.alert_logreg.text = str(
@@ -801,7 +850,8 @@ class logistic_regression(plot_attributes):
         self.source_logreg_cm = ColumnDataSource(
             data=dict(Actual=actual_cm, Prediction=predicted_cm, value=value_cm))
 
-        self.logreg_cm_mapper = LinearColorMapper(palette=logreg_cm_colors, low=0, high=100)
+        self.logreg_cm_mapper = LinearColorMapper(
+            palette=logreg_cm_colors, low=0, high=100)
 
         self.labels_logreg_cm = LabelSet(x='Actual', y='Prediction', text='value', level='overlay', x_offset=0,
                                          y_offset=-10,
@@ -838,7 +888,8 @@ class logistic_regression(plot_attributes):
 
         fpr_roc, tpr_roc = [], []
 
-        self.source_logreg_roc = ColumnDataSource(data=dict(fpr_roc=fpr_roc, tpr_roc=tpr_roc))
+        self.source_logreg_roc = ColumnDataSource(
+            data=dict(fpr_roc=fpr_roc, tpr_roc=tpr_roc))
 
         const_roc_x, const_roc_y = [], []
         self.source_logreg_const_roc = ColumnDataSource(
@@ -867,7 +918,7 @@ class logistic_regression(plot_attributes):
 
         self.logreg_target_ms = Select(title="Select target for Logistic regression:", value="SELECT TARGET",
                                        options=["SELECT TARGET"])
-        self.button_logreg = Button(label="Calculate regression", css_classes= ['button'])
+        self.button_logreg = Button(label="Calculate regression")
         self.button_logreg.disabled = True
 
         self.logreg_data_select.on_change("value", self.create_figure_logreg)
@@ -878,9 +929,8 @@ class logistic_regression(plot_attributes):
             text="""<center>Classification Report</center>""", width=600)
 
         self.alert_logreg = Div(text='', css_classes=['hidden'], visible=False)
-        
 
-        self.alert_logreg.js_on_change('text', callback_notification)
+        self.alert_logreg.js_on_change('text', self.callback_notification)
 
         tab_logreg = Panel(child=column(self.logreg_data_select, self.table_logreg,
                                         row(column(self.logreg_features_ms, self.normalize_logreg,
@@ -1035,8 +1085,8 @@ class classification(plot_attributes):
 
         classify_cm_colors = list(reversed(Blues[9]))
         actual_cm, predicted_cm, value_cm = [], [], []
-        self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm, 
-                                                    value=value_cm))
+        self.source_classify_cm = ColumnDataSource(data=dict(Actual=actual_cm, Prediction=predicted_cm,
+                                                             value=value_cm))
 
         self.classify_cm_mapper = LinearColorMapper(
             palette=classify_cm_colors, low=0, high=100)
@@ -1100,7 +1150,7 @@ class classification(plot_attributes):
 
         self.classify_target_ms = Select(title="Select target for Classification:", value="SELECT TARGET",
                                          options=["SELECT TARGET"])
-        self.button_classify = Button(label="Perform classification", css_classes= ['button'])
+        self.button_classify = Button(label="Perform classification")
         self.button_classify.disabled = True
 
         self.classify_data_select.on_change(
@@ -1114,12 +1164,12 @@ class classification(plot_attributes):
         self.alert_classify = Div(text='', css_classes=[
                                   'hidden'], visible=False)
 
-        self.alert_classify.js_on_change('text', callback_notification)
+        self.alert_classify.js_on_change('text', self.callback_notification)
 
         tab_classify = Panel(child=column(self.classify_data_select, self.table_classify,
-                                    row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
-                                                     self.button_classify), 
-                                    column(self.div_report_title, self.table_class_rep_classify,column(self.classify_cm_plot, self.classify_fi_plot, self.alert_classify)))),
+                                          row(column(self.classify_features_ms, self.normalize_classify, self.classify_target_ms,
+                                                     self.button_classify),
+                                              column(self.div_report_title, self.table_class_rep_classify, column(self.classify_cm_plot, self.classify_fi_plot, self.alert_classify)))),
                              title="Classification")
 
         return tab_classify
@@ -1194,10 +1244,12 @@ class clustering(plot_attributes):
 
         self.hover_clust = HoverTool(tooltips=[("User", "$index"),
                                                ("Cluster", "@cluster")])
-        self.mapper = linear_cmap(field_name='cluster', palette=Set1[9], low=min(cluster_col), high=max(cluster_col))
+        self.mapper = linear_cmap(field_name='cluster', palette=Set1[9], low=min(
+            cluster_col), high=max(cluster_col))
         self.clust_scat = figure(plot_height=600, plot_width=850, tools=[
                                  'pan,box_zoom,reset,tap'] + [self.hover_clust])
-        self.clust_scat.scatter( "x", 'y', source=self.source_clust, color=self.mapper, size=10, legend='cluster')
+        self.clust_scat.scatter(
+            "x", 'y', source=self.source_clust, color=self.mapper, size=10, legend='cluster')
         self.clust_scat.axis.major_tick_line_color = None
         self.clust_scat.axis.minor_tick_line_color = None
         self.clust_scat.xaxis.axis_label = "Dimension 1"
@@ -1214,7 +1266,8 @@ class clustering(plot_attributes):
             labels=["Actual Data", "Normalize Data"], active=0)
         self.clust_slider = Slider(title="Total Clusters", value=5, start=1, end=20, step=1,
                                    callback_policy='mouseup', css_classes=['custom_slider'])
-        self.button_cluster = Button(label="Calculate and plot clusters", css_classes= ['button'])
+        self.button_cluster = Button(
+            label="Calculate and plot clusters", css_classes=['button'])
         self.button_cluster.disabled = True
 
         self.clus_data_select.on_change("value", self.clustering_plot)
@@ -1223,7 +1276,7 @@ class clustering(plot_attributes):
         self.alert_cluster = Div(text='', css_classes=[
                                  'hidden'], visible=False)
 
-        self.alert_cluster.js_on_change('text', callback_notification)
+        self.alert_cluster.js_on_change('text', self.callback_notification)
 
         tab_cluster = Panel(child=column(self.clus_data_select, self.table_clustering,
                                          row(column(self.clust_features_ms, self.clust_norm_rbg, self.clust_slider,
@@ -1233,7 +1286,7 @@ class clustering(plot_attributes):
         return tab_cluster
 
 
-class main_tool(eda_plots, linear_regression, logistic_regression, clustering, classification):
+class main_tool(landing_page, eda_plots, linear_regression, logistic_regression, clustering, classification):
 
     """
         Add datasets in each dictionary based on the algorithm
@@ -1269,16 +1322,22 @@ class main_tool(eda_plots, linear_regression, logistic_regression, clustering, c
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
         self.error_count = 0
-        
+        self.callback_notification = CustomJS(args={}, code="""var x = document.getElementById("toast")
+                x.className = "show";
+                s = cb_obj.text
+                document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+
     def run_tool(self):
+        landing_tab = self.landing_note()
         eda_tab = self.exploration_plots()
         linreg_tab = self.lin_reg()
         logreg_tab = self.logreg()
         cluster_tab = self.cluster()
         classify_tab = self.classify()
 
-        tabs = Tabs(tabs=[eda_tab, linreg_tab, logreg_tab, classify_tab, cluster_tab],
-                    tabs_location='above', sizing_mode='scale_both')
+        tabs = Tabs(tabs=[landing_tab, eda_tab, linreg_tab, logreg_tab, classify_tab, cluster_tab],
+                    tabs_location='above', sizing_mode='scale_both', active=0)
 
         return tabs
 

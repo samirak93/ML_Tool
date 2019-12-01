@@ -259,7 +259,7 @@ body {
     cursor: pointer;
 }
 
-.bk-root  input[type="checkbox"] {
+.bk-root input[type="checkbox"] {
     position: relative;
     top: 0px;
     margin-left: 4px;
@@ -375,23 +375,29 @@ footer {
     to {bottom: 60px; opacity: 0;}
 }
 
-
-.button {
-    color: black;
-    background-color: none;
-    border-color: dodgerblue;
-    border-radius: 30px;
+.div_landing {
+    display : block;
+    margin : auto auto;
+    text-align: left;
+    width: max-content;
+    position: relative;
+    height: 100%;
+    font-size: 35px;
 }
-/* .button:hover {
-    background-color: dodgerblue;
-    border-color: white;
-    color: white;
-    transition: background-color 0.5s;
-    transition: color 0.5s;
-    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
-} */
-/* .button.bk-active {
-    background-color: dodgerblue;
-    border-color: white;
-    color: white;
-} */
+
+.fa-github {
+    background: white;
+    color: black;
+  }
+.fa {
+    padding: 20px;
+    font-size: 20px;
+    width: 20px;
+    text-align: center;
+    text-decoration: none;
+    margin: 5px 2px;
+    border-radius: 100%;
+  }
+.fa:hover {
+    opacity: 0.7;
+}
