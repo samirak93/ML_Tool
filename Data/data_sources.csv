@@ -1,0 +1,46 @@
+﻿Name,Dataset,Link,Description
+Credit Card (Clustering),Credit Card (Clustering),https://www.kaggle.com/arjunbhasin2013/ccdata,"This case requires to develop a customer segmentation to define marketing strategy. The sample Dataset summarizes the usage behavior of about 9000 active credit card holders during the last 6 months. The file is at a customer level with 18 behavioral variables.
+<br>
+
+<br>BALANCE : Balance amount left in their account to make purchases
+<br>BALANCE_FREQUENCY : How frequently the Balance is updated, score between 0 and 1 (1 = frequently updated, 0 = not frequently updated) <br>PURCHASES : Amount of purchases made from account ONEOFF_PURCHASES : Maximum purchase amount done in one-go <br>INSTALLMENTS_PURCHASES : Amount of purchase done in installment CASH_ADVANCE : Cash in advance given by the user <br>PURCHASES_FREQUENCY : How frequently the Purchases are being made, score between 0 and 1 (1 = frequently purchased, 0 = not frequently purchased) <br>ONEOFFPURCHASESFREQUENCY : How frequently Purchases are happening in one-go (1 = frequently purchased, 0 = not frequently purchased) <br>PURCHASESINSTALLMENTSFREQUENCY : How frequently purchases in installments are being done (1 = frequently done, 0 = not frequently done) <br>CASHADVANCEFREQUENCY : How frequently the cash in advance being paid <br>CASHADVANCETRX : Number of Transactions made with ""Cash in Advanced"" <br>PURCHASES_TRX : Numbe of purchase transactions made <br>CREDIT_LIMIT : Limit of Credit Card for user <br>PAYMENTS : Amount of Payment done by user <br>MINIMUM_PAYMENTS : Minimum amount of payments made by user <br>PRCFULLPAYMENT : Percent of full payment paid by user TENURE : Tenure of credit card service for user<br>"
+House Sales (Lin. Reg.),House Sales (Linear Regression),https://www.kaggle.com/harlfoxem/housesalesprediction,"This dataset contains house sale prices for King County, which includes Seattle. It includes homes sold between May 2014 and May 2015."
+Diabetes (Log. Reg.),Diabetes (Logistic Regression),https://www.kaggle.com/uciml/pima-indians-diabetes-database,"The datasets consists of several medical predictor variables and one target variable, Outcome. Predictor variables includes the number of pregnancies the patient has had, their BMI, insulin level, age, and so on.<br>
+<br>PREGNANCIES: Number of times pregnant
+<br>GLUCOSE: Plasma glucose concentration a 2 hours in an oral glucose tolerance test
+<br>BLOOD PRESSURE: Diastolic blood pressure (mm Hg)
+<br>SKIN THICKNESS: Triceps skin fold thickness (mm)
+<br>INSULIN: 2-Hour serum insulin (mu U/ml)
+<br>BMI: Body mass index (weight in kg/(height in m)^2)
+<br>DIABETES PREDIGREE FUNCTION: Diabetes pedigree function
+<br>AGE: Age (years)
+<br>OUTCOME: Class variable (0 or 1) 268 of 768 are 1, the others are 0"
+Glass Type (Classification),Glass Type (Classification),https://archive.ics.uci.edu/ml/datasets/Glass+Identification,"This is a Glass Identification Data Set from UCI. It contains 10 attributes including id. The response is glass type(discrete 7 values)
+Attribute Information:
+<br>
+<br>REFRACTIVE INDEX: refractive index
+<br>SODIUM: Sodium (unit measurement: weight percent in corresponding oxide, as are attributes 4-10)
+<br>MAGNESIUM: Magnesium
+<br>ALUMINIUM: Aluminum
+<br>SILICONE: Silicon
+<br>POTASSIUM: Potassium
+<br>CALCIUM: Calcium
+<br>BARIUM: Barium
+<br>IRON: Iron
+<br>TYPE OF GLASS: (class attribute) -- 1 building_windows_float_processed -- 2 building_windows_non_float_processed -- 3 vehicle_windows_float_processed -- 4 vehicle_windows_non_float_processed (none in this database) -- 5 containers -- 6 tableware -- 7 headlamps"
+Census Income (Classification),Census Income (Classification),https://archive.ics.uci.edu/ml/datasets/census+income,"Target: Income >50K, <=50K. 
+<br>
+<br>AGE: continuous. 
+<br>WORK CLASS: Private, Self-emp-not-inc, Self-emp-inc, Federal-gov, Local-gov, State-gov, Without-pay, Never-worked. 
+<br>FNLWGT: continuous. 
+<br>EDUCATION: Bachelors, Some-college, 11th, HS-grad, Prof-school, Assoc-acdm, Assoc-voc, 9th, 7th-8th, 12th, Masters, 1st-4th, 10th, Doctorate, 5th-6th, Preschool. 
+<br>EDUCATION-NUM: continuous. 
+<br>MARITAL-STATUS: Married-civ-spouse, Divorced, Never-married, Separated, Widowed, Married-spouse-absent, Married-AF-spouse. 
+<br>OCCUPATION: Tech-support, Craft-repair, Other-service, Sales, Exec-managerial, Prof-specialty, Handlers-cleaners, Machine-op-inspct, Adm-clerical, Farming-fishing, Transport-moving, Priv-house-serv, Protective-serv, Armed-Forces. 
+<br>RELATIONSHIP: Wife, Own-child, Husband, Not-in-family, Other-relative, Unmarried. 
+<br>RACE: White, Asian-Pac-Islander, Amer-Indian-Eskimo, Other, Black. 
+<br>SEX: Female, Male. 
+<br>CAPITAL-GAIN: continuous. 
+<br>CAPITAL-LOSS: continuous. 
+<br>HOURS-PER-WEEK: continuous. 
+<br>NATIVE-COUNTRY: United-States, Cambodia, England, Puerto-Rico, Canada, Germany, Outlying-US(Guam-USVI-etc), India, Japan, Greece, South, China, Cuba, Iran, Honduras, Philippines, Italy, Poland, Jamaica, Vietnam, Mexico, Portugal, Ireland, France, Dominican-Republic, Laos, Ecuador, Taiwan, Haiti, Columbia, Hungary, Guatemala, Nicaragua, Scotland, Thailand, Yugoslavia, El-Salvador, Trinadad&Tobago, Peru, Hong, Holand-Netherlands."

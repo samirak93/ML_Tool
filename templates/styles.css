@@ -401,3 +401,12 @@ footer {
 .fa:hover {
     opacity: 0.7;
 }
+.itemconfiguration
+{
+    
+    overflow: auto;
+    float: left;
+    position: relative;
+    margin-left: -5px;
+    text-align: left;
+}
