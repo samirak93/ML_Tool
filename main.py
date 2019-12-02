@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Updated: Nov-23-19
+# Updated: Dec-2-19
 
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
     LegendItem, Span, BasicTicker, LabelSet
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
-    CheckboxGroup, PreText, Paragraph, FileInput
+    CheckboxGroup, PreText, Paragraph, FileInput, TextAreaInput, HTMLTemplateFormatter
 from bokeh.layouts import column, row, widgetbox
 from bokeh.palettes import Spectral6, Set1, Category20, RdBu, RdBu3, Oranges, Blues
 from bokeh.transform import linear_cmap, transform
@@ -26,6 +26,7 @@ from clustering import get_elbow_plot, get_tsne, clustering_data
 from regression import get_corr_plot, get_regression_plot, get_colors
 from logistic_regression import get_logreg_output
 from classification import get_classify_output
+from data_sources import load_data_sources
 
 from pybase64 import b64decode
 import warnings
@@ -70,10 +71,13 @@ class landing_page():
         self.note = None
 
     def upload_fit_data(self, attr, old, new):
-            print (file_input.filename)
             decoded = b64decode(new)
             f = io.BytesIO(decoded)
-            new_df = pd.read_csv(f)
+            self.load_filename = self.file_input.filename
+            self.load_df = pd.read_csv(f)
+ 
+            self.error_count += 1
+            self.alert_loading.text = str(self.error_count)+" "+ str(self.load_filename)+" \nloaded successfully!!"
 
     def enable_upload(self, attr, old, new):
         if self.load_data_source.active == 1:
@@ -82,18 +86,18 @@ class landing_page():
             self.file_input.disabled = True
 
     def landing_note(self):
-        self.note = Div(text="""Machine Learning Tool: <br> This is a tool to get hands-on experience with Machine Learning
+        self.note = Div(text="""<br><br> Machine Learning Tool: <br> This is a tool to get hands-on experience with Machine Learning
         concepts like Regression, Classification, Clustering. There are 2 ways to use this tool.</br></br>
         <li>If you've a dataset of your choice, you can upload the dataset below. (<b>Note:</b> At this point, please only 
-        upload files that are either <i style= "color: red;">.csv/.xls</i> format and smaller in size (<30000 rows)). Larger files would  work but will
+        upload files that are either <i style= "color: red; font-weight: bold;">.csv/.xls</i> format and smaller in size (<30000 rows)). Larger files would  work but will
         take longer time to execute the models and making plots. </li>
         </br>
-        <li>The second option is to choose the pre-loaded datasets (open-source) avaialable within each section.</li> """,
-                        style={'font-size': '14pt', 'color': 'black'},
+        <li>The second option is to choose the existing pre-loaded datasets (open-source) available within each section.</li> </br>
+        </br></br></br>""",
+                        style={'font-size': '14pt', 'color': 'black',"font":'Font Awesome\ 5 Free'},
                         width=1200, sizing_mode='stretch_both', css_classes=['div_landing'])
 
-
-        self.load_data_source = RadioButtonGroup(labels=["Use sample data", "Upload data"], active=0)
+        self.load_data_source = RadioButtonGroup(labels=["Sample datasets", "Custom dataset"], active=0)
 
         self.file_input = FileInput(accept=".csv,.xls", disabled= True)
         self.file_input.disabled = True
@@ -101,7 +105,11 @@ class landing_page():
         self.load_data_source.on_change('active', self.enable_upload)
         self.file_input.on_change('value', self.upload_fit_data)
 
-        tab_landing = Panel(child=column(self.note, row(self.load_data_source, self.file_input)),
+        self.alert_loading = Div(text='', css_classes=['hidden'], visible=False)
+
+        self.alert_loading.js_on_change('text', self.callback_notification)
+
+        tab_landing = Panel(child=column(self.note, row(self.load_data_source, self.file_input), self.alert_loading),
                             title="Home")
         return tab_landing
 
@@ -148,6 +156,7 @@ class eda_plots(plot_attributes):
         self.plot_hist.yaxis.axis_label = ''
         self.plot_count_plot.xaxis.axis_label = ''
         self.plot_count_plot.yaxis.axis_label = ''
+        self.data_source_eda.text = ""
 
     def create_eda_figure(self):
         active_df = self.explore_data_select.value
@@ -231,11 +240,11 @@ class eda_plots(plot_attributes):
 
     def eda_table(self, attr, old, new):
         active_df = self.explore_data_select.value
+        data_source_text = load_data_sources()
 
         if active_df != "Select dataset":
             self.reset_data_eda()
-            self.file_path = str(self.cwd + self.data_path +
-                                 str(self.eda_data_source.get(active_df)))
+            self.file_path = str(self.cwd + self.data_path + str(self.eda_data_source.get(active_df)))
             self.eda_df = pd.read_csv(self.file_path)
             self.eda_df = self.eda_df.fillna(self.eda_df.mean())
             self.eda_df.columns = [x.upper() for x in self.eda_df.columns]
@@ -249,8 +258,7 @@ class eda_plots(plot_attributes):
             likely_cat = {}
             for var in self.eda_df.columns:
                 filter_objects[var] = self.eda_df[var].dtype == np.float64 or self.eda_df[var].dtype == np.int64
-                filter_numeric[var] = str(
-                    self.eda_df[var].dtype) == 'object' or self.eda_df[var].nunique() <= 20
+                filter_numeric[var] = str(self.eda_df[var].dtype) == 'object' or self.eda_df[var].nunique() <= 20
                 likely_cat[var] = self.eda_df[var].nunique() <= 20
 
             filter_objects = [
@@ -265,7 +273,12 @@ class eda_plots(plot_attributes):
             filter_numeric = [
                 k for k, v in filter_numeric.items() if v is True]
             self.select_count_plot.options = ["None"] + filter_numeric
-
+            
+            data_source_df = data_source_text[data_source_text['Name'] == active_df]
+            data_text = "<b>Title:</b> "+data_source_df['Dataset'].tolist()[0] + "<br><br>" + \
+                "<b>Source Link:</b> <a href="+ data_source_df['Link'].tolist()[0] +""" target="_blank">"""+data_source_df['Link'].tolist()[0]+"</a><br>" + \
+                "<b>Description:</b>" + data_source_df['Description'].tolist()[0] + "<br><br>"
+            self.data_source_eda.text = data_text
         else:
             self.reset_data_eda()
 
@@ -290,8 +303,7 @@ class eda_plots(plot_attributes):
 
         df_exploration = pd.DataFrame()
         self.source_eda = ColumnDataSource(data=dict(df_exploration))
-        eda_columns = [TableColumn(field=cols, title=cols)
-                       for cols in df_exploration.columns]
+        eda_columns = [TableColumn(field=cols, title=cols) for cols in df_exploration.columns]
         self.table_eda = DataTable(source=self.source_eda, columns=eda_columns, width=1200,
                                    height=300, fit_columns=True)
 
@@ -389,14 +401,17 @@ class eda_plots(plot_attributes):
         self.button_hist_plot.on_click(self.create_hist_figure)
         self.button_count_plot.on_click(self.create_count_figure)
 
-        tab_eda = Panel(child=column(self.explore_data_select, self.table_eda,
+        
+        self.data_source_eda = Div(text='', width = 800, height = 200, css_classes=['itemconfiguration'])
+
+        tab_eda = Panel(child=column(row(self.explore_data_select, self.data_source_eda), self.table_eda,
                                      row(column(self.select_x_axis, self.log_x_cb, self.select_y_axis, self.log_y_cb,
                                                 self.select_color, self.button_eda_plot), self.plot_scatter),
                                      row(column(self.select_hist, self.log_hist_cb, self.slider_bins,
                                                 self.button_hist_plot), self.plot_hist),
                                      row(column(self.select_count_plot,
                                                 self.button_count_plot), self.plot_count_plot)),
-                        title="Exploration")
+                        title="Data Exploration")
         return tab_eda
 
 
