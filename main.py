@@ -29,7 +29,6 @@ from logistic_regression import get_logreg_output
 from classification import get_classify_output
 from data_sources import load_data_sources
 
-from pybase64 import b64decode
 import warnings
 import os
 import io
