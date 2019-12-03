@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# Updated: Dec-2-19
+# Author: Samira Kumar <samirakumar@yahoo.com>
+# Date:   Mon Dec 2 2019
 
 from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
@@ -70,46 +71,21 @@ class landing_page():
     def __init__(self):
         self.note = None
 
-    def upload_fit_data(self, attr, old, new):
-            decoded = b64decode(new)
-            f = io.BytesIO(decoded)
-            self.load_filename = self.file_input.filename
-            self.load_df = pd.read_csv(f)
- 
-            self.error_count += 1
-            self.alert_loading.text = str(self.error_count)+" "+ str(self.load_filename)+" \nloaded successfully!!"
-
-    def enable_upload(self, attr, old, new):
-        if self.load_data_source.active == 1:
-            self.file_input.disabled = False
-        else:
-            self.file_input.disabled = True
-
     def landing_note(self):
-        self.note = Div(text="""<br><br> Machine Learning Tool: <br> This is a tool to get hands-on experience with Machine Learning
-        concepts like Regression, Classification, Clustering. There are 2 ways to use this tool.</br></br>
-        <li>If you've a dataset of your choice, you can upload the dataset below. (<b>Note:</b> At this point, please only 
-        upload files that are either <i style= "color: red; font-weight: bold;">.csv/.xls</i> format and smaller in size (<30000 rows)). Larger files would  work but will
-        take longer time to execute the models and making plots. </li>
-        </br>
-        <li>The second option is to choose the existing pre-loaded datasets (open-source) available within each section.</li> </br>
+        self.note = Div(text="""<br><br> Machine Learning Tool: <br> This is a tool to get hands-on experience 
+        with Machine Learning concepts like Regression, Classification, Clustering. </br></br>
+        
+        <li>There are pre-loaded datasets (open-source) available within each section that can be used.</li> </br>
         </br></br></br>""",
                         style={'font-size': '14pt', 'color': 'black',"font":'Font Awesome\ 5 Free'},
                         width=1200, sizing_mode='stretch_both', css_classes=['div_landing'])
 
-        self.load_data_source = RadioButtonGroup(labels=["Sample datasets", "Custom dataset"], active=0)
-
-        self.file_input = FileInput(accept=".csv,.xls", disabled= True)
-        self.file_input.disabled = True
-
-        self.load_data_source.on_change('active', self.enable_upload)
-        self.file_input.on_change('value', self.upload_fit_data)
 
         self.alert_loading = Div(text='', css_classes=['hidden'], visible=False)
 
         self.alert_loading.js_on_change('text', self.callback_notification)
 
-        tab_landing = Panel(child=column(self.note, row(self.load_data_source, self.file_input), self.alert_loading),
+        tab_landing = Panel(child=column(self.note),
                             title="Home")
         return tab_landing
 
@@ -557,16 +533,13 @@ class linear_regression(plot_attributes):
 
             likely_target = {}
             for var in self.reg_df.columns:
-                likely_target[var] = self.reg_df[var].nunique(
-                ) > self.reg_df.shape[0]*0.1
+                likely_target[var] = self.reg_df[var].nunique() > self.reg_df.shape[0]*0.1
             likely_target = [k for k, v in likely_target.items() if v is True]
             self.reg_target_ms.options = [
                 'SELECT TARGET'] + list(likely_target)
 
-            top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(
-                self.reg_df)
-            self.corr_plot(top, bottom, left, right, labels,
-                           nlabels, color_list, corr)
+            top, bottom, left, right, labels, nlabels, color_list, corr = get_corr_plot(self.reg_df)
+            self.corr_plot(top, bottom, left, right, labels, nlabels, color_list, corr)
 
             self.button_reg.disabled = True
         else:
@@ -587,16 +560,16 @@ class linear_regression(plot_attributes):
                                    fit_columns=True)
 
         top, bottom, left, right, color, corr = [], [], [], [], [], []
-        self.source_corr = ColumnDataSource(
-            data=dict(top=top, bottom=bottom, left=left, right=right, color=color, corr=corr))
+        self.source_corr = ColumnDataSource(data=dict(top=top, bottom=bottom, left=left, right=right, 
+                                                      color=color, corr=corr))
 
         self.hover_corr = HoverTool(tooltips=[("Correlation", "@corr{1.11}")])
 
         self.plot_corr = figure(plot_width=750, plot_height=650, title="Correlation Matrix",
                                 toolbar_location='left', tools=[self.hover_corr])
 
-        self.plot_corr.quad(top='top', bottom='bottom', left='left',
-                            right='right', color='color', line_color='white', source=self.source_corr)
+        self.plot_corr.quad(top='top', bottom='bottom', left='left', right='right', color='color', 
+                            line_color='white', source=self.source_corr)
         self.plot_corr = self.plot_format(self.plot_corr)
         self.plot_corr.xgrid.grid_line_color = None
         self.plot_corr.ygrid.grid_line_color = None
@@ -1342,6 +1315,7 @@ class main_tool(landing_page, eda_plots, linear_regression, logistic_regression,
                 s = cb_obj.text
                 document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);
                 setTimeout(function(){ x.className = x.className.replace("show", ""); }, 5000);""")
+        self.reg_data_select = None
 
     def run_tool(self):
         landing_tab = self.landing_note()
