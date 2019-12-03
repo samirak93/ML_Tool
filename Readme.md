@@ -33,8 +33,6 @@ There are 5 sections in the application, excluding the `introduction` section.
 
 ## Credits
 
----
-
 Developer -  -  (@)
 
 ## License
