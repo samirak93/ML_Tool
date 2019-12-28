@@ -73,14 +73,11 @@ There are 5 sections in the application, excluding the `Introduction` section.
 
 <h2 align="center"> Sample dashboards </h2>
 
-<h2 align="center"> 
-
 Exploration |  Logistic Regression
 :-------------------------:|:-------------------------:
 <img src="./images/exploration.png" width="300" height="350" />  |  <img src="./images/logistic.png" width="300" height="350" /> 
 
 ---
-</h2>
 
 <h2 align="center"> Credits </h2>
 
