@@ -250,7 +250,7 @@ class eda_plots(plot_attributes):
             self.select_count_plot.options = ["None"] + filter_numeric
             
             data_source_df = data_source_text[data_source_text['Name'] == active_df]
-            data_text = "<b>Title:</b> "+data_source_df['Dataset'].tolist()[0] + "<br><br>" + \
+            data_text = "<center>Data Source</center>\n\n<b>Title:</b> "+data_source_df['Dataset'].tolist()[0] + "<br><br>" + \
                 "<b>Source Link:</b> <a href="+ data_source_df['Link'].tolist()[0] +""" target="_blank">"""+data_source_df['Link'].tolist()[0]+"</a><br>" + \
                 "<b>Description:</b>" + data_source_df['Description'].tolist()[0] + "<br><br>"
             self.data_source_eda.text = data_text

@@ -29,7 +29,7 @@ def get_elbow_plot(X):
         silhoutte_score.fit(X)
 
         output_text = """The optimal number of clusters is """ + \
-                      str(silhoutte_score.n_clusters_) + """ and the silhoutte score is """ + \
+                      str(silhoutte_score.n_clusters_) + """ and the silhouette score is """ + \
                       str(np.round(silhoutte_score.silhouette_score_, 2))
     except ValueError as e:
         print(e)
