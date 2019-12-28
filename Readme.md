@@ -1,4 +1,4 @@
-# <center> Machine Learning Tool </center>
+<h1 align="center"> Machine Learning Tool </h1>
 
 - This is a tool to get hands-on experience with Machine Learning concepts like Regression, Classification, Clustering.
 - There are pre-loaded datasets (open-source) available within each section of the application (**Note:** Adding custom datasets could a future update).
@@ -23,7 +23,7 @@
 
 [clustering.py](clustering.py) - performs the necessary calculations for `Clustering`.
 
-[styles.css](templates/styles.css) - CSS file for custom modifications to Bokeh widgets, plots and few other Bokeh objects. (**Note:** Lot of customization were done and could result in different effect on different browsers)
+[styles.css](templates/styles.css) - CSS file for custom modifications to Bokeh widgets, plots and few other Bokeh objects. (**Note:** Huge amount of customization were done on Bokeh and could result in different effect on different browsers)
 
 ---
 
@@ -81,6 +81,7 @@ Exploration |  Logistic Regression
 ## Credits
 
 Developer - Samira Kumar ([@SamiraK93](https://twitter.com/Samirak93))
+Created for University of California, Irvine.
 
 ---
 
