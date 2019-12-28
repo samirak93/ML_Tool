@@ -9,7 +9,8 @@
 
 ---
 
-## Core components of the tool
+<h2 align="center"> Core components of the tool </h2>
+
 
 [main.py](main.py) - Core code which builds the application. The application is built using [Bokeh](https://docs.bokeh.org/en/latest/) and uses other packages like [Scikit-Learn](https://scikit-learn.org/stable/) for Machine Learning.
 
@@ -27,7 +28,7 @@
 
 ---
 
-## Inside the application
+<h2 align="center"> Inside the application </h2>
 
 There are 5 sections in the application, excluding the `Introduction` section.
 
@@ -70,22 +71,25 @@ There are 5 sections in the application, excluding the `Introduction` section.
 
 ---
 
-## Sample dashboard
+<h2 align="center"> Sample dashboards </h2>
+
+<h2 align="center"> 
 
 Exploration |  Logistic Regression
 :-------------------------:|:-------------------------:
 <img src="./images/exploration.png" width="300" height="350" />  |  <img src="./images/logistic.png" width="300" height="350" /> 
 
 ---
+</h2>
 
-## Credits
+<h2 align="center"> Credits </h2>
 
 Developer - Samira Kumar ([@SamiraK93](https://twitter.com/Samirak93))
 Created for University of California, Irvine.
 
 ---
 
-## License
+<h2 align="center"> License </h2>
 
 MIT License
 
