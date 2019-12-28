@@ -11,19 +11,19 @@
 
 ## Running the application
 
-### Locally:
+### Locally
 
 Set the directory to current folder where `ML` (current repository) folder is located
 
-```terminal
+```$
 
 # Optional - activate your virtualenv
 
-pip install -r /ML/requirements.txt
+$ pip install -r /ML/requirements.txt
 
 # Once the packages are installed,
 
-bokeh serve --show ml
+$ bokeh serve --show ml
 
 # The app should automatically open on your default browser or you can view it at http://localhost:5006/ml
 
