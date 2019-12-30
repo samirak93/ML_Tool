@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# Author: Samira Kumar <samirakumar@yahoo.com>
-# Date:   Mon Dec 2 2019
+# Version 1.0
+# Date: Dec 29 2019
 
-from bokeh.models import Panel, Tabs
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
-    LegendItem, Span, BasicTicker, LabelSet
+    LegendItem, Span, BasicTicker, LabelSet, Panel, Tabs
 from bokeh.models.widgets import DataTable, Select, TableColumn, Slider, MultiSelect, RadioButtonGroup, Div, Button, \
     CheckboxGroup, PreText, Paragraph, FileInput, TextAreaInput, HTMLTemplateFormatter
 from bokeh.layouts import column, row, widgetbox
@@ -18,16 +17,17 @@ from bokeh import events
 from bokeh.models.callbacks import CustomJS
 
 from math import pi
+
 from collections import OrderedDict
 
 import pandas as pd
 import numpy as np
 
-from clustering import get_elbow_plot, get_tsne, clustering_data
-from regression import get_corr_plot, get_regression_plot, get_colors
-from logistic_regression import get_logreg_output
-from classification import get_classify_output
-from data_sources import load_data_sources
+from code.clustering import get_elbow_plot, get_tsne, clustering_data
+from code.regression import get_corr_plot, get_regression_plot, get_colors
+from code.logistic_regression import get_logreg_output
+from code.classification import get_classify_output
+from code.data_sources import load_data_sources
 
 import warnings
 import os
@@ -1309,7 +1309,8 @@ class main_tool(landing_page, eda_plots, linear_regression, logistic_regression,
         self.axis_label_text_font = 'times'
         self.axis_label_text_font_size = "12pt"
         self.error_count = 0
-        self.callback_notification = CustomJS(args={}, code="""var x = document.getElementById("toast")
+        self.callback_notification = CustomJS(args={}, 
+                code="""var x = document.getElementById("toast")
                 x.className = "show";
                 s = cb_obj.text
                 document.getElementById("desc").innerHTML = s.substr(s.indexOf(' ')+1);

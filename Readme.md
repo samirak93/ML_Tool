@@ -9,11 +9,17 @@
 
 ---
 
-## Running the application
+<h2 align="center"> Running the application </h2>
+
+Clone this repository:
+
+`git clone https://github.com/samirak93/ML_Tool.git`
 
 ### Locally
 
-Set the directory to current folder where `ML` (current repository) folder is located
+`Tested to work on Python 3.7.5 and above`
+
+Set the current directory to folder where `ML_Tool` (current repository) folder is downloaded
 
 ```$
 
@@ -25,13 +31,30 @@ $ pip install -r /ML/requirements.txt
 
 $ bokeh serve --show ml
 
-# The app should automatically open on your default browser or you can view it at http://localhost:5006/ml
+# The app should automatically open on your default browser or you can view it at http://localhost:5006/ml_tool
 
 ```
 
 ### Docker
 
---- To be completed ---
+### Setup
+
+Install [Docker](https://docs.docker.com/install/) on your platform.
+
+### Building
+
+In the top level of this repository (where dockerfile is located), execute the command
+
+`docker build --tag ML_Tool .`
+
+### Running
+
+Execute the command to start the Docker container:
+
+`docker run --rm -p 5006:5006 -it ML_Tool`
+
+Now navigate to `http://localhost:5006` to interact with the application.
+
 
 ---
 
@@ -106,9 +129,8 @@ Exploration |  Linear Regression | Logistic Regression
 
 ## Credits
 
-Developer - *Samira Kumar ([@SamiraK93](https://twitter.com/Samirak93))*
+Developed by *Samira Kumar ([@SamiraK93](https://twitter.com/Samirak93))* for *University of California, Irvine.*
 
-*Created for University of California, Irvine.*
 
 ---
 
