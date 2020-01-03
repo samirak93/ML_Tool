@@ -45,7 +45,7 @@ Install [Docker](https://docs.docker.com/install/) on your platform.
 
 In the top level of this repository (where dockerfile is located), execute the command
 
-`docker build --tag ML_Tool .`
+`docker build --tag tag_name .`
 
 ### Running
 

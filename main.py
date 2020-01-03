@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Version 1.0
-# Date: Dec 29 2019
+# Date: Jan 2 2020
 
 from bokeh.plotting import figure, curdoc
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Legend, BasicTickFormatter, \
@@ -74,7 +74,15 @@ class landing_page():
         self.note = Div(text="""<br><br> Machine Learning Tool: <br> This is a tool to get hands-on experience 
         with Machine Learning concepts like Regression, Classification, Clustering. </br></br>
         
-        <li>There are pre-loaded datasets (open-source) available within each section that can be used.</li> </br>
+        <li>The tool was built to make it as a medium to get hands-on visual experience to different aspect of 
+        data science like exploring/visualizing different data types, building models to make predictions, 
+        evaluating the models.</li> </br>
+        <li>At this point, model optimization/selection is not an option since datasets are pre-built. 
+        This could be implemented as a future update.</li>
+        <br><br></br></br>
+        <b>Disclaimer:</b> As a data scientist, this is not the <i>only</i> way to learn/practice data science concepts. 
+        For someone with relatively less experience in coding/data-science concepts, this is a method to 
+        facilitate interest and give a brief idea about the concepts.
         </br></br></br>""",
                         style={'font-size': '14pt', 'color': 'black',"font":'Font Awesome\ 5 Free'},
                         width=1200, sizing_mode='stretch_both', css_classes=['div_landing'])
