@@ -51,7 +51,7 @@ In the top level of this repository (where dockerfile is located), execute the c
 
 Execute the command to start the Docker container:
 
-`docker run --rm -p 5006:5006 -it ML_Tool`
+`docker run --rm -p 5006:5006 -it tag_name`
 
 Now navigate to `http://localhost:5006` to interact with the application.
 
